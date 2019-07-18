@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+
+	<head>
+		<title>James King - Everything You Need to Know</title>
+		<meta charset="utf-8">
+	</head>
+
+	
+	<!-- Go Back and Put the Links to the other sites in -->
+	
+
+	<body>
+
+		<link href="CSS For HTML of First Website" type="text/css" rel="stylesheet">
+
+		<center>
+		<img src="https://www.google.com/search?q=crown+logo&tbm=isch&source=iu&pf=m&ictx=1&fir=JxiuiLokv_uNTM%253A%252Cf6d9RY51ykhH3M%252C_&usg=__8UakPoIxLz_NcEESJ8CZIXLje50%3D&sa=X&ved=0ahUKEwiBgJKZkvnWAhVDQiYKHWDBCccQ9QEIOjAD&biw=1280&bih=625#imgrc=JxiuiLokv_uNTM:">
+		<h1>Directory</h1>
+		<p><a href="Resume Code link Here or #Name" target="_blank" rel="nofollow">Resume</a></p>
+		<p><a href="Contact Information link Here" target="_blank" rel="nofollow">Contact Information</a></p>
+		<p><a href="Personal Information link Here" target="_blank" rel="nofollow">Personal Information</a></p>
+		<p><a href="Website Suggestion link Here" target="_blank" rel="nofollow">Website Suggestions</a></p>
+
+		<br>
+
+		
+		</center>
+
+		
+
+
+
+
+
+		</body>
+	<footer><center>
+		<a href="Resume Code">Resume</a>
+		<a href="Contact Information">Contact Information</a>
+		<a href="Personal Information">Personal Information</a>
+		<a href="Website Suggestions">Website Suggestions</a>
+
+		<p>This website was made using strictly HTML and CSS</p></footer>
+		</center>
+</html>	

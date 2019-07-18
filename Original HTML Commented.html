@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<title>James King - Everything You Need to Know</title>
+		<link href="1.css" type="text/css" rel="stylesheet">
+		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+			/* auto doesn't do anything by itself. Probably meant margin: 0 auto; but that doesn't center the page here like you probably wanted. */
+				margin: auto;
+				
+				/* Typically a bad idea. Design wise it usually doesn't look great and you won't want EVERYTHING centered. */
+				text-align: center;
+				
+				/* !important can be omitted here. Also background: white; would do the same thing as background-color: white;
+				
+				There are many ways to select a color in css, either typing the name like 'white', using rgb values, hex values, or hsl values. There's only so many names, so there is a limitation there, but for rgb, hex, and hsl values they all function differently for the same results, so it doesn't matter what you use as long as you're consistent. If you use hex values at one point, you shouldn't swap to rgb or even using names like 'white'. Consistency makes it look better.
+				*/
+				background-color: white; !important
+				 
+			}
+
+			h1 {
+				font-size: 60px;
+				font-family: Trebuchet;
+				
+				/* Because you used text-align: center; in the body selector, you don't need to add it here, too. It will inherit it from body. */
+				text-align: center;
+				
+				/* position:relative isn't useful here because it doesn't do anything in this case. text-align will move it to the centered position fine. */
+				position: relative;
+			}
+
+			p {
+				font-size: 25px;
+				
+				/* Again, this can be omitted since it will inherit it from body */
+				text-align: center;
+			}
+
+			a{
+				font-family: Trebuchet;
+				color: black;
+				text-decoration: none;
+			}
+
+			img {
+				/* All of this is unnecessary. display for img tags defaults to block.
+				margin: auto doesn't do anything because it centers anyways thanks to the text-align:center in body Z-index: -1 doesn't change the look of this page because there is nothing overtop the img. Top is an incorrect value for float, and position:relative is useless here if all you want is it to be centered.*/
+				
+				
+				display: block;
+				margin: auto;
+				z-index: -1;
+				float: top;
+				position: relative;
+			}
+			
+			footer {
+				
+				/* Oops */
+				position: bottom: 5px;
+				left: 0;
+				right: 0;
+				text-align: center;
+
+			}
+			
+			
+			/* Instead of using a button, you can put all of this code underneath the a selector and it will make the link look the exact same with less elements cluttering the code */
+			button {
+			
+				/* Don't forget to add px at the end of these values */
+  				-webkit-border-radius: 23;
+  				-moz-border-radius: 23;
+				
+				
+  				border-radius: 23px;
+ 				font-family: Arial;
+ 				color: #4DE1FF;
+  				font-size: 45px;
+ 				background: #4DE1FF;
+				
+				/* this is basically padding: right, bottom, left, top
+				
+				you can cut this down with padding: 15px 10px;
+				
+				The browser will read the 10px as top AND bottom and the 15px as left AND right */
+  				padding: 10px 15px 10px 15px;
+				
+				
+  				text-decoration: none;
+			}
+
+			/* ditto as above but a:hover instead of button:hover*/
+			button:hover {
+  				background: #48D1ED;
+ 				text-decoration: none;
+			}
+			
+			.footer {
+				
+ 				font-family: Arial;
+				
+				/* Not needed because by default p elements are black and above you set a elements to black */
+ 				color: black;
+				
+				
+  				font-size: 35px;
+ 				background: #4DE1FF;
+  				padding: 0;
+  				border: 0;
+  				margin:0;
+  				text-decoration: none;
+			}
+			.footer:hover {
+				background: #48D1ED;
+ 				text-decoration: none;
+			}
+		</style>
+	</head>
+
+	
+	<!-- Go Back and Put the Links to the other sites in -->
+		
+		<body>
+		
+		<img src="https://i.pinimg.com/736x/b8/b4/9d/b8b49d110d47a0eade4a9ee445e071ea--simple-logos-symbol-logo.jpg" alt="An image of a Crown">
+		<h1>Directory</h1>
+		<br>
+		<button><a href="Resume_Code.html" target="_blank" rel="nofollow">Resume</a></button>
+		<br>
+		<button>
+		<a href="Contact_Information.html" target="_blank" rel="nofollow">Contact Information</a>
+		</button>
+		<br>
+		<button>
+		<a href="Personal_Information.html" target="_blank" rel="nofollow">Personal Information</a>
+		</button>
+		<br>
+		<button>
+		<a href="Website_Suggestions.html" target="_blank" rel="nofollow">Website Suggestions</a>
+		</button>
+		<br>
+
+		<p>Welcome to my website!</p>
+		<p>Please use the buttons above to be forewarded to the proper location.</p>
+		<p> If you experience any problems, please go to the Website suggestions page and report them under "Problems".</p>
+		<p>The purpose of this website is to demonstrate my knowledge of HTML as well as CSS while at the same time giving potential professional aquaintences a resource to use to get a better understanding about me.</p>
+		<p>Those an equal point no years do. Depend warmth fat but her but played. Shy and subjects wondered trifling pleasant. Prudent cordial comfort do no on colonel as assured chicken. Smart mrs day which begin. Snug do sold mr it if such. Terminated uncommonly at at estimating. Man behaviour met moonlight extremity acuteness direction.</p>
+		<p>Those an equal point no years do. Depend warmth fat but her but played. Shy and subjects wondered trifling pleasant. Prudent cordial comfort do no on colonel as assured chicken. Smart mrs day which begin. Snug do sold mr it if such. Terminated uncommonly at at estimating. Man behaviour met moonlight extremity acuteness direction.</p>
+		<p>Those an equal point no years do. Depend warmth fat but her but played. Shy and subjects wondered trifling pleasant. Prudent cordial comfort do no on colonel as assured chicken. Smart mrs day which begin. Snug do sold mr it if such. Terminated uncommonly at at estimating. Man behaviour met moonlight extremity acuteness direction.</p>
+		<p>Those an equal point no years do. Depend warmth fat but her but played. Shy and subjects wondered trifling pleasant. Prudent cordial comfort do no on colonel as assured chicken. Smart mrs day which begin. Snug do sold mr it if such. Terminated uncommonly at at estimating. Man behaviour met moonlight extremity acuteness direction.</p>
+
+
+		
+
+
+
+
+
+		</body>
+	<footer>
+		<button>
+		<a class="footer" href="Resume_Code.html">Resume</a>
+		</button><button>
+		<a class="footer" href="Contact_Information.html">Contact Information</a>
+		</button><button>
+		<a class="footer" href="Personal_Information.html">Personal Information</a>
+		</button><button>
+		<a class="footer" href="Website_Suggestions.html">Website Suggestions</a>
+		</button>
+
+		<p class="bottom">This website was made using strictly HTML and CSS</p>
+	
+		</footer>
+	
+</html>	
