@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.fb-mp-state.json
+.fb-mp-state.json.tmp
+cookies*.json
+results*.json
+results*.csv
+results*.jsonl
