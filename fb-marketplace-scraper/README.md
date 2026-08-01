@@ -5,10 +5,12 @@ listings — title, price, location, link, and image. It drives a real Chromium
 browser via [Playwright](https://playwright.dev/python/), so it sees the same
 pages you would.
 
-Two modes:
+Three ways to use it:
 
-- **`search`** — run a query once, print a table or export JSON/CSV/JSONL.
-- **`watch`** — re-run the query on an interval (default every 15 minutes),
+- **The point-and-click app** — double-click a launcher, a friendly search
+  page opens in your browser. Made for non-technical users; see below.
+- **`search`** (CLI) — run a query once, print a table or export JSON/CSV/JSONL.
+- **`watch`** (CLI) — re-run the query on an interval (default every 15 minutes),
   remember what it has already seen, and tell you only about **new** listings —
   optionally pinging a Discord or Slack webhook so deal alerts land on your phone.
 
@@ -26,7 +28,44 @@ Two modes:
 - The official, ToS-friendly alternative: Facebook's own **saved searches /
   "Notify me" alerts** in the Marketplace app do most of what `watch` mode does.
 
-## Install
+## The point-and-click app
+
+The folder doubles as a small desktop app: a local search page with a big
+search box, price/city filters, and clickable result cards that open the
+listing on Facebook. (Watch-mode alerts are CLI-only for now.)
+
+**Windows**
+
+1. Put the `fb-marketplace-scraper` folder anywhere (e.g. Documents).
+2. If Python isn't installed yet: get it from
+   <https://www.python.org/downloads/> and **tick "Add python.exe to PATH"**
+   in the installer. One time only.
+3. Double-click **`Start Marketplace Search.bat`**. The first run downloads
+   what it needs (a few minutes, one time only); after that it starts in
+   seconds and opens the search page in your browser.
+4. Optional: double-click **`Create Desktop Shortcut.bat`** once — you get a
+   proper **Marketplace Search** icon on the Desktop to click from then on.
+
+Keep the black window open while using the app; close it to quit.
+
+**macOS**
+
+1. Double-click **`Start Marketplace Search.command`**. The very first time,
+   right-click it and choose *Open* to get past the unsigned-script warning.
+2. Same deal: the first run sets things up, then the search page opens.
+
+**Good to know**
+
+- Everything runs on your own computer — the page lives at
+  `http://127.0.0.1:8977` and is not reachable from the internet.
+- Searches take ~15–40 seconds because a real browser loads Facebook behind
+  the scenes.
+- If the app says Facebook wants a login, drop your exported cookies in this
+  folder as `cookies.json` (see *Using your own login* below) — the app picks
+  it up automatically.
+- Preview the interface with sample data (no scraping): `python3 app.py --demo`.
+
+## Install (CLI)
 
 Requires Python 3.9+.
 
@@ -133,7 +172,7 @@ don't move it into version control, and only use your own account.
 ## Tests
 
 ```bash
-python3 -m unittest            # parser + URL unit tests, plus a local
-                               # end-to-end test against a fixture page
+python3 -m unittest            # parser/URL unit tests, web-app API tests, and
+                               # a local end-to-end test against a fixture page
                                # (auto-skips if no Chromium is available)
 ```

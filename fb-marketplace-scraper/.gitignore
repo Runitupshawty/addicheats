@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+.venv/
 .fb-mp-state.json
 .fb-mp-state.json.tmp
 cookies*.json

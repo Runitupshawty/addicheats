@@ -212,14 +212,36 @@ def _require_playwright():
 
 def _chromium_candidates(explicit: Optional[str]) -> list[str]:
     candidates = [explicit, os.environ.get("FB_MP_CHROMIUM")]
-    browsers_path = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
-    if browsers_path:
-        candidates += sorted(
-            glob.glob(os.path.join(browsers_path, "chromium-*", "chrome-linux", "chrome")),
-            reverse=True,
-        )
-        candidates.append(os.path.join(browsers_path, "chromium"))
-    candidates += ["/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome"]
+    home = os.path.expanduser("~")
+    caches = [
+        os.environ.get("PLAYWRIGHT_BROWSERS_PATH"),
+        os.path.join(home, ".cache", "ms-playwright"),
+        os.path.join(home, "Library", "Caches", "ms-playwright"),
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "ms-playwright"),
+    ]
+    for base in caches:
+        if not base or not os.path.isdir(base):
+            continue
+        for pattern in (
+            os.path.join("chromium-*", "chrome-linux", "chrome"),
+            os.path.join("chromium-*", "chrome-mac*", "Chromium.app",
+                         "Contents", "MacOS", "Chromium"),
+            os.path.join("chromium-*", "chrome-win", "chrome.exe"),
+        ):
+            candidates += sorted(glob.glob(os.path.join(base, pattern)), reverse=True)
+        candidates.append(os.path.join(base, "chromium"))
+    candidates += [
+        "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome",
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        os.path.join(os.environ.get("PROGRAMFILES", r"C:\Program Files"),
+                     "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"),
+                     "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome",
+                     "Application", "chrome.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"),
+                     "Microsoft", "Edge", "Application", "msedge.exe"),
+    ]
     return [c for c in candidates if c and os.path.exists(c)]
 
 
