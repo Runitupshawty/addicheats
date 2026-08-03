@@ -50,9 +50,15 @@ Keep the black window open while using the app; close it to quit.
 
 **macOS**
 
-1. Double-click **`Start Marketplace Search.command`**. The very first time,
-   right-click it and choose *Open* to get past the unsigned-script warning.
+1. Unzip the folder first, then double-click **`Start Marketplace Search.command`**.
+   The very first time, right-click it and choose *Open* to get past the
+   unsigned-script warning — macOS quarantines anything downloaded.
 2. Same deal: the first run sets things up, then the search page opens.
+3. Optional: right-click **`Create Desktop Shortcut.command`** → *Open* once.
+   It builds a **Marketplace Search.app** on the Desktop (real icon, opens
+   Terminal and starts the app). Do step 1 at least once first, so the
+   quarantine prompt is out of the way. The shortcut stores the folder's
+   current location — if you move the folder, run it again to repoint it.
 
 **Good to know**
 

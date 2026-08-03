@@ -19,9 +19,13 @@ STEP 3 — The first start takes a few minutes.
 WHILE YOU USE IT
    Keep the black console window open. Closing it quits the app.
 
-WANT AN ICON ON THE DESKTOP?  (Windows)
-   Double-click "Create Desktop Shortcut" once.
-   You'll get a "Marketplace Search" icon to use from then on.
+WANT AN ICON ON THE DESKTOP?
+   Run "Create Desktop Shortcut" once, from inside the folder:
+   Windows: double-click it.
+   Mac:     right-click it -> Open.
+   You'll get a "Marketplace Search" icon on the Desktop to use from then on.
+   (On Mac, start the app once via right-click -> Open first, so macOS
+    stops treating it as a file downloaded from the internet.)
 
 FIRST TIME ONLY — IF IT SAYS PYTHON IS MISSING
    Get it from  https://www.python.org/downloads/
