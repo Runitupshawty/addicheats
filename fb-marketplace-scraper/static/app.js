@@ -82,9 +82,8 @@ function showError(data) {
     box.append(el("span", null, "That happens in some regions or after lots of searches. Wait a bit and try again — or (for the technically inclined) save exported Facebook cookies as cookies.json in the app folder; the app will use them automatically. See README.md."));
   } else {
     statusEl.className = "status error";
-    box.append(el("strong", null, "Something went wrong. "));
+    box.append(el("strong", null, "Couldn't finish that search. "));
     box.append(el("span", null, data.message || "Unknown error."));
-    box.append(el("span", "hint", "Tip: check that the app window is still open, then try again."));
   }
   statusEl.replaceChildren(box);
 }

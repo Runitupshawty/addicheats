@@ -177,7 +177,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(502, {"error": "login_wall", "message": str(e)})
         except Exception as e:  # surface anything else as a friendly message
             self._send_json(502, {"error": "scrape_failed",
-                                  "message": f"{type(e).__name__}: {e}"})
+                                  "message": scraper.describe_error(e)})
         finally:
             SEARCH_LOCK.release()
 

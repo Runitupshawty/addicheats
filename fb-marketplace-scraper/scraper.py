@@ -36,6 +36,13 @@ ITEM_HREF_RE = re.compile(r"/marketplace/item/(\d+)")
 # ("CA$", "MX$"), a currency symbol, then digits with separators.
 PRICE_TOKEN_RE = re.compile(r"(?:[A-Z]{0,3}\$|€|£|¥|₹)\s?\d[\d,.  ]*")
 LOCATION_RE = re.compile(r"^[^\d]+,\s?\S+")
+# "… Palo Alto, CA" at the end of a run-together line. Requires a capitalised
+# place plus a 2-letter state/province so ordinary title commas don't match.
+TRAILING_LOCATION_RE = re.compile(
+    r"(?:^|\s)([A-Z][\w.'’-]*(?:[ \-][A-Z][\w.'’-]*){0,2},\s*[A-Z]{2})$"
+)
+# Leading "Free" as a whole word — "Freezer" and "Freestanding" must not match.
+FREE_PREFIX_RE = re.compile(r"free\b", re.IGNORECASE)
 
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -122,6 +129,44 @@ def parse_price(line: str) -> tuple[Optional[str], Optional[float]]:
     return raw, _to_number(re.sub(r"^[^\d]*", "", raw))
 
 
+def strip_leading_prices(line: str) -> str:
+    """Drop the price token(s) from the front of a line, leaving the rest.
+
+    Handles the discounted "$1,200$1,500" form by consuming both.
+    """
+    rest = line.strip()
+    free = FREE_PREFIX_RE.match(rest)
+    if free:
+        rest = rest[free.end():].lstrip()
+    while True:
+        m = PRICE_TOKEN_RE.match(rest)
+        if not m:
+            return rest
+        rest = rest[m.end():].lstrip()
+
+
+def split_title_location(text: str,
+                         known_title: Optional[str] = None
+                         ) -> tuple[Optional[str], Optional[str]]:
+    """Split a run-together "Title City, ST" string into its two parts.
+
+    With `known_title` (the image's alt text) the boundary is exact. Without
+    it the split is a guess: "Weber charcoal grill Fremont, CA" resolves
+    cleanly, but a title whose trailing words are capitalised is genuinely
+    ambiguous — hence the cap on how many words a place name may span.
+    """
+    text = text.strip()
+    if known_title:
+        known_title = known_title.strip()
+        if text.lower().startswith(known_title.lower()):
+            rest = text[len(known_title):].strip(" -–—,")
+            return known_title, (rest or None)
+    m = TRAILING_LOCATION_RE.search(text)
+    if not m:
+        return (text or None), None
+    return (text[:m.start()].strip(" -–—,") or None), m.group(1).strip()
+
+
 def listing_from_card(card: dict) -> Optional[Listing]:
     """Build a Listing from one search-result anchor's href/innerText/img."""
     m = ITEM_HREF_RE.search(card.get("href") or "")
@@ -138,6 +183,16 @@ def listing_from_card(card: dict) -> Optional[Listing]:
             price_raw, price_value, price_idx = raw, value, i
             break
 
+    # A free listing whose text ran together onto one line. Safe to key off a
+    # leading "Free" only because no currency token was found anywhere: a paid
+    # listing always carries one, so a title merely starting with "Free" (e.g.
+    # "Free weights set") can't be misread while its price is present.
+    if price_raw is None:
+        for i, line in enumerate(lines):
+            if FREE_PREFIX_RE.match(line):
+                price_raw, price_value, price_idx = "Free", 0.0, i
+                break
+
     # The listing image's alt text is the title in the current layout; fall
     # back to the first non-price line after the price.
     title = (card.get("alt") or "").strip() or None
@@ -152,6 +207,16 @@ def listing_from_card(card: dict) -> Optional[Listing]:
         if len(line) < 60 and LOCATION_RE.match(line):
             location = line
             break
+
+    # When the card's text runs together on a single line — which is what
+    # innerText gives when Facebook renders the text spans inline rather than
+    # as blocks — the per-line scans above find nothing. Recover title and
+    # location from what follows the price on that line.
+    if (title is None or location is None) and price_idx is not None:
+        tail_title, tail_location = split_title_location(
+            strip_leading_prices(lines[price_idx]), known_title=title)
+        title = title or tail_title
+        location = location or tail_location
 
     return Listing(
         id=item_id,
@@ -347,6 +412,36 @@ def _looks_login_walled(page) -> bool:
         return page.locator('form[action*="login"] input[name="pass"]').count() > 0
     except Exception:
         return False
+
+
+def describe_error(exc: Exception) -> str:
+    """Turn a Playwright/browser failure into something a person can act on."""
+    if isinstance(exc, LoginWallError):
+        return str(exc)
+    text = str(exc)
+    pairs = [
+        (("ERR_TUNNEL_CONNECTION_FAILED", "ERR_PROXY_CONNECTION_FAILED"),
+         "Couldn't reach Facebook — a proxy or network policy is blocking the "
+         "connection. If you're on a work or school network, that's usually the cause."),
+        (("ERR_NAME_NOT_RESOLVED", "ERR_INTERNET_DISCONNECTED",
+          "ERR_CONNECTION_REFUSED", "ERR_CONNECTION_RESET",
+          "ERR_CONNECTION_CLOSED", "ERR_ADDRESS_UNREACHABLE"),
+         "Couldn't reach Facebook — check that this computer is online, then try again."),
+        (("ERR_CERT_", "ERR_SSL_"),
+         "Couldn't establish a secure connection to Facebook. If you're behind "
+         "a network filter or VPN, try turning it off."),
+        (("Executable doesn't exist", "Failed to launch", "BrowserType.launch"),
+         "The browser this tool drives isn't installed. Run "
+         "'python -m playwright install chromium', or start the app again so "
+         "it can finish setting itself up."),
+        (("Timeout", "timeout"),
+         "Facebook took too long to respond. It may be busy or rate-limiting "
+         "this computer — wait a few minutes and try again."),
+    ]
+    for needles, message in pairs:
+        if any(n in text for n in needles):
+            return message
+    return f"Something went wrong while searching ({type(exc).__name__})."
 
 
 LOGIN_WALL_HINT = (
@@ -566,7 +661,7 @@ def cmd_watch(args: argparse.Namespace) -> int:
             print(f"[{stamp}] {e}", file=sys.stderr)
         except Exception as e:
             consecutive_errors += 1
-            print(f"[{stamp}] error: {e}", file=sys.stderr)
+            print(f"[{stamp}] error: {describe_error(e)}", file=sys.stderr)
 
         if consecutive_errors >= 5:
             print("Five consecutive failures — stopping. See README.md troubleshooting.",
@@ -645,6 +740,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 130
     except LoginWallError as e:
         print(f"error: {e}", file=sys.stderr)
+        return 2
+    except Exception as e:
+        # A stack trace helps nobody here; say what went wrong and how to dig in.
+        print(f"error: {describe_error(e)}", file=sys.stderr)
+        print(f"       (details: {type(e).__name__}: {str(e).splitlines()[0]})",
+              file=sys.stderr)
         return 2
 
 
