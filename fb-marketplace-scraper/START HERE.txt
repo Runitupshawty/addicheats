@@ -1,0 +1,38 @@
+MARKETPLACE SEARCH — how to start it
+====================================
+
+STEP 1 — UNZIP FIRST.  This is the step people miss.
+   Do not open the app from inside the zip file.
+   Windows: right-click the zip -> "Extract All..." -> Extract.
+   Mac:     double-click the zip.
+   Then open the "Marketplace Search" folder it creates.
+
+STEP 2 — Start it, from inside that extracted folder:
+   Windows: double-click  "Start Marketplace Search"
+   Mac:     right-click   "Start Marketplace Search"  ->  Open
+            (only the first time; after that just double-click)
+
+STEP 3 — The first start takes a few minutes.
+   It downloads what it needs, once. Later starts take seconds.
+   Your web browser opens on its own when it's ready.
+
+WHILE YOU USE IT
+   Keep the black console window open. Closing it quits the app.
+
+WANT AN ICON ON THE DESKTOP?
+   Run "Create Desktop Shortcut" once, from inside the folder:
+   Windows: double-click it.
+   Mac:     right-click it -> Open.
+   You'll get a "Marketplace Search" icon on the Desktop to use from then on.
+   (On Mac, start the app once via right-click -> Open first, so macOS
+    stops treating it as a file downloaded from the internet.)
+
+FIRST TIME ONLY — IF IT SAYS PYTHON IS MISSING
+   Get it from  https://www.python.org/downloads/
+   In the installer, TICK "Add python.exe to PATH", then try again.
+
+TROUBLE?
+   "missing files it needs to run"  ->  you started it from inside the zip.
+                                        Go back to STEP 1.
+   Anything else                    ->  see README.md, or send the message
+                                        it printed.
