@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+opportunities.db
+company_profile.json
+drafts/
+.venv/
