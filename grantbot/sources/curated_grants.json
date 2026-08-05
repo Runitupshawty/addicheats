@@ -1,0 +1,65 @@
+{
+  "_comment": "Curated recurring small-business grant programs and watch pages. type 'listing' entries are known programs checked against their page; type 'watch' entries are pages scanned for new grant announcements. Verify current status on the linked page before drafting — programs open and close throughout the year.",
+  "sources": [
+    {
+      "id": "md-commerce",
+      "type": "watch",
+      "name": "Maryland Department of Commerce - Funding Programs",
+      "url": "https://commerce.maryland.gov/fund",
+      "notes": "State funding programs for Maryland businesses. Watch for small business and rural business programs."
+    },
+    {
+      "id": "frederick-oed",
+      "type": "watch",
+      "name": "Frederick County Office of Economic Development",
+      "url": "https://www.discoverfrederickmd.com/",
+      "notes": "County-level business assistance, occasional grant and microloan programs for Frederick County businesses."
+    },
+    {
+      "id": "tedco",
+      "type": "watch",
+      "name": "TEDCO (Maryland Technology Development Corporation)",
+      "url": "https://www.tedcomd.com/funding",
+      "notes": "Mostly tech-focused but runs rural and pre-seed programs occasionally open to service businesses."
+    },
+    {
+      "id": "hello-alice",
+      "type": "watch",
+      "name": "Hello Alice Small Business Grants",
+      "url": "https://helloalice.com/funding/grants/",
+      "notes": "Aggregator of corporate small-business grant programs; frequently rotating $5k-$25k awards."
+    },
+    {
+      "id": "verizon-sbdi",
+      "type": "listing",
+      "name": "Verizon Small Business Digital Ready Grants",
+      "url": "https://www.verizon.com/about/responsibility/digital-inclusion/small-business-training",
+      "award_low": 10000,
+      "award_high": 10000,
+      "recurring": "multiple rounds per year",
+      "eligibility": "US small businesses that complete free Digital Ready courses",
+      "notes": "Requires completing 2 free online courses to unlock grant application. Good fit for owner-operated service businesses."
+    },
+    {
+      "id": "usda-rural",
+      "type": "watch",
+      "name": "USDA Rural Development - Business Programs (Maryland)",
+      "url": "https://www.rd.usda.gov/programs-services/business-programs",
+      "notes": "Rural business development grants (RBDG) usually flow through intermediaries, but Value-Added and microenterprise assistance programs can reach small rural businesses. Thurmont-area businesses may qualify as rural."
+    },
+    {
+      "id": "sba-md",
+      "type": "watch",
+      "name": "SBA Maryland District Office",
+      "url": "https://www.sba.gov/district/baltimore",
+      "notes": "SBA rarely grants directly to for-profits but announces state/local programs and lender events worth tracking."
+    },
+    {
+      "id": "skip-monthly",
+      "type": "watch",
+      "name": "Skip / other rotating small business grant lists",
+      "url": "https://helloskip.com/grants",
+      "notes": "Rotating monthly small-business grant roundups."
+    }
+  ]
+}
