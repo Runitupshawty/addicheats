@@ -1,0 +1,27 @@
+{
+  "company_name": "King Contracting LLC",
+  "uei": "",
+  "cage_code": "",
+  "duns": "",
+  "point_of_contact": {
+    "name": "James King",
+    "email": "james.king7522@gmail.com",
+    "phone": ""
+  },
+  "certifications": ["small_business"],
+  "capabilities": [
+    "General construction and renovation",
+    "Facility maintenance",
+    "Landscaping and grounds keeping"
+  ],
+  "keywords": ["construction", "maintenance", "renovation", "repair", "landscaping"],
+  "past_performance": [
+    {
+      "title": "Example project",
+      "client": "Example client",
+      "summary": "Replace with a real past project: scope, value, outcome."
+    }
+  ],
+  "service_area": "Nationwide",
+  "notes": "Copy this file to company_profile.json and fill it in. Keywords and certifications only BOOST ranking; nothing is filtered out, so all contract types still appear."
+}
