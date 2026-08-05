@@ -1,0 +1,45 @@
+{
+  "_comment": "Offline sample data shaped like the Grants.gov search2 API oppHits payload, for testing with `scan --demo`.",
+  "oppHits": [
+    {
+      "id": 360111,
+      "number": "USDA-RD-RBDG-2026",
+      "title": "Rural Business Development Grants - Small Business Technical Assistance and Equipment",
+      "agencyCode": "USDA-RD",
+      "agency": "USDA Rural Development",
+      "openDate": "07/01/2026",
+      "closeDate": "09/30/2026",
+      "oppStatus": "posted"
+    },
+    {
+      "id": 360222,
+      "number": "SBA-MICRO-2026",
+      "title": "Microenterprise Development Program - Working Capital for Sole Proprietors",
+      "agencyCode": "SBA",
+      "agency": "Small Business Administration",
+      "openDate": "06/15/2026",
+      "closeDate": "08/29/2026",
+      "oppStatus": "posted"
+    },
+    {
+      "id": 360333,
+      "number": "NSF-RES-2026",
+      "title": "University Research Institution Infrastructure Awards",
+      "agencyCode": "NSF",
+      "agency": "National Science Foundation",
+      "openDate": "05/01/2026",
+      "closeDate": "12/01/2026",
+      "oppStatus": "posted"
+    },
+    {
+      "id": 360444,
+      "number": "DOL-WF-TRADES-2026",
+      "title": "Skilled Trades Workforce Training Grants for Small Business Employers",
+      "agencyCode": "DOL",
+      "agency": "Department of Labor",
+      "openDate": "07/20/2026",
+      "closeDate": "10/15/2026",
+      "oppStatus": "posted"
+    }
+  ]
+}

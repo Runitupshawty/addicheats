@@ -1,0 +1,74 @@
+{
+  "owner": {
+    "name": "James King",
+    "email": "james.king7522@gmail.com",
+    "phone": "240-315-7030",
+    "education": "B.S. in Business, Shepherd University; Catoctin High School Class of 2014",
+    "bio": "James King is the owner-operator of a small contracting business serving Frederick County, Maryland and the surrounding area. He holds a business degree from Shepherd University, where he also played Division II football, and has nearly two years of crew-management experience leading painting teams at Cochran & Mann before starting his own operation."
+  },
+  "business": {
+    "name": "James King Contracting",
+    "type": "sole proprietorship",
+    "founded": null,
+    "employees": 1,
+    "location": {
+      "city": "Thurmont",
+      "county": "Frederick County",
+      "state": "MD",
+      "state_full": "Maryland"
+    },
+    "services": [
+      "landscaping",
+      "mulching and plant installation",
+      "interior and exterior painting",
+      "trash and junk removal",
+      "small home repairs and handyman work"
+    ],
+    "description": "A small owner-operated contracting business providing landscaping, painting, junk removal, and handyman services to homeowners, realtors, and repeat residential clients in Frederick County, Maryland. Work comes primarily through word of mouth, realtor referrals, and repeat customers.",
+    "growth_plan": "Purchase additional equipment (trailer, commercial mower, sprayer rig), formalize the business entity (LLC), invest in bonding/insurance to qualify for larger commercial and government contracts, and eventually hire 1-2 crew members.",
+    "typical_use_of_funds": [
+      "Equipment: trailer, commercial-grade mower, paint sprayer, hauling equipment",
+      "Business formation and licensing costs (LLC, MHIC home improvement license)",
+      "Insurance and bonding to qualify for commercial/government work",
+      "Marketing: website, vehicle wrap, local advertising",
+      "Working capital to hire seasonal crew members"
+    ],
+    "registrations": {
+      "uei_sam_gov": false,
+      "mhic_license": false,
+      "llc_formed": false
+    }
+  },
+  "matching": {
+    "keywords_strong": [
+      "small business", "microbusiness", "microenterprise", "micro-enterprise",
+      "entrepreneur", "startup", "sole proprietor", "self-employed",
+      "landscap", "lawn", "horticult", "painting", "contractor", "construction",
+      "home improvement", "trades", "skilled trades"
+    ],
+    "keywords_context": [
+      "maryland", "frederick", "rural", "workforce", "equipment",
+      "working capital", "technical assistance", "training", "young",
+      "first-time", "minority", "veteran", "community development"
+    ],
+    "keywords_exclude": [
+      "women-owned only", "nonprofit only", "501(c)(3)", "institution of higher education",
+      "federally recognized tribe", "state government", "local government only",
+      "research institution", "university"
+    ],
+    "eligible_applicant_types": [
+      "small businesses",
+      "individuals",
+      "for-profit organizations other than small businesses",
+      "unrestricted"
+    ],
+    "min_award_interest": 500,
+    "search_terms": [
+      "small business",
+      "microenterprise",
+      "rural business development",
+      "landscaping",
+      "workforce trades"
+    ]
+  }
+}
