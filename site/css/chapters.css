@@ -1,0 +1,399 @@
+/* =============================================================================
+   chapters.css — the animated life of a chapter
+   =============================================================================
+
+   OWNERSHIP
+   ---------
+   This file owns exactly two things inside a `.chapter`:
+     1. the media treatment — the framed artwork and its slow camera move;
+     2. the copy treatment  — the scrim that keeps text readable over artwork,
+        and the fade/rise as the chapter settles and releases.
+
+   It does NOT own the chapter box model, the page background, the header,
+   footer, floor plans, tour form or sticky CTA. Those are layout.css's.
+
+   HOW THE MOTION WORKS
+   --------------------
+   js/scroll.js writes one number onto each `.chapter`:
+
+       --p   0 -> 1, the chapter's own progress through the viewport.
+             0 = its top edge is level with the bottom of the screen
+             0.5 (roughly) = it is centred and filling the screen
+             1 = its bottom edge has just passed the top of the screen
+
+   Everything below is a `calc()` off that number, so the animation is genuinely
+   tied to the scrollbar rather than to a clock. Scroll up and it plays exactly
+   backwards. Stop and it stops.
+
+   WITH JAVASCRIPT OFF
+   -------------------
+   `--p` is never set, so every `var(--p, …)` falls back to 0.5 — the settled,
+   mid-chapter state. The result is a normal, fully visible, fully readable
+   page: copy at opacity 1 and no offset, artwork at a fixed gentle crop. This
+   is the single most important property of this file. If you edit it, keep
+   every fallback at 0.5 and re-test with scripting disabled.
+
+   CONTRAST
+   --------
+   Two stacked scrims guarantee body text clears 4.5:1 against the artwork at
+   every scroll position:
+     • a veil over the whole media frame (0.25 ink at the top, 0.72 at the foot)
+     • a feathered panel behind the copy itself (0.70 ink, flat where the text
+       actually sits)
+   Worst case — pure-white artwork behind the copy — the two together composite
+   to about #514C46, which against `--c-paper` text is ~7.3:1. The copy panel on
+   its own, if Structure ever places copy off the artwork, is still ~6.4:1.
+   ========================================================================== */
+
+
+/* ===========================================================================
+   1. Per-chapter variables
+   ===========================================================================
+   All the tuning lives here so the rules below stay readable. Values are the
+   calm, mobile-first set; the min-width block near the bottom opens them up.
+   ------------------------------------------------------------------------ */
+
+.chapter {
+  /* --p, clamped defensively. Fallback 0.5 = "settled", the no-JS state. */
+  --p-clamped: clamp(0, var(--p, 0.5), 1);
+
+  /* -- Camera move on the artwork ---------------------------------------- */
+  /* Baseline zoom. Must stay above 1 so the drift below can never expose an
+     edge of the image inside the frame. */
+  --cam-zoom: 1.06;
+  /* How much further it pushes in across the whole chapter (1.06 -> 1.10). */
+  --cam-range: 0.04;
+  /* Vertical parallax lag, as a percentage of the frame. Keep this comfortably
+     under half the overscan the zoom provides — at zoom 1.06 the overscan is
+     3% per edge, so 1.4% is safe. */
+  --cam-drift: 1.4%;
+
+  /* -- Copy reveal window ------------------------------------------------ */
+  /* The copy fades up between p = 0.12 and p = 0.34 (i.e. as the chapter goes
+     from a quarter visible to two thirds visible), holds, then releases
+     between p = 0.70 and p = 0.92 as the chapter leaves the top. */
+  --copy-in: clamp(0, calc((var(--p-clamped, 0.5) - 0.12) / 0.22), 1);
+  --copy-out: clamp(0, calc((0.92 - var(--p-clamped, 0.5)) / 0.22), 1);
+  --copy-reveal: min(var(--copy-in, 1), var(--copy-out, 1));
+
+  /* How far the copy sits below its resting place on the way in, and how far
+     it drifts above it on the way out. */
+  --copy-rise: 14px;
+  --copy-release: 8px;
+
+  /* -- Scrim -------------------------------------------------------------- */
+  /* Ink at alpha. Written out longhand rather than colour-mix() so this works
+     everywhere and degrades to nothing surprising. */
+  --scrim-ink: 22, 18, 14;          /* --c-ink #16120E as an rgb triplet */
+  --scrim-copy-alpha: 0.7;
+  --scrim-media-top: 0.25;
+  --scrim-media-foot: 0.72;
+  /* Feather sizes — how far the scrim fades out past the edge of the text. */
+  --scrim-bleed-y: 2.5rem;
+  --scrim-bleed-x: 1.5rem;
+  --scrim-feather-y: 2.25rem;
+  --scrim-feather-x: 1.25rem;
+}
+
+
+/* ===========================================================================
+   2. The media frame
+   ===========================================================================
+   `.chapter__media` is the window; the `<img>` inside it is what moves. The
+   frame clips, the picture drifts. Size and placement of the frame itself are
+   Structure's business — the only box-model properties set here are the two
+   that the effect cannot exist without (clipping, and a positioning context
+   for the scrim).
+   ------------------------------------------------------------------------ */
+
+.chapter__media {
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter__media img {
+  display: block;
+  width: 100%;
+  /* height:100% when the frame has a height; falls back to the image's own
+     aspect ratio when it does not, so a chapter can never collapse. */
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+
+  /* THE CAMERA MOVE.
+     translate: the picture lags behind the frame — as the chapter travels up
+       the screen the image slides gently down inside it (-1.4% -> +1.4%).
+     scale:     a slow, continuous push-in across the whole chapter.
+     At the no-JS fallback of p = 0.5 this resolves to translate 0 / scale 1.08,
+     a perfectly ordinary slightly-cropped photograph. */
+  transform:
+    translate3d(
+      0,
+      calc(var(--cam-drift, 1.4%) * (var(--p-clamped, 0.5) - 0.5) * 2),
+      0
+    )
+    scale(calc(var(--cam-zoom, 1.06) + var(--cam-range, 0.04) * var(--p-clamped, 0.5)));
+}
+
+/* The veil. Sits above the artwork, below the copy. Weighted to the foot of
+   the frame, where copy usually lands, but never fully clear at the top — that
+   0.25 floor is what lets the copy panel be subtle rather than a black slab. */
+.chapter__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(var(--scrim-ink), var(--scrim-media-foot, 0.72)) 0%,
+    rgba(var(--scrim-ink), 0.52) 34%,
+    rgba(var(--scrim-ink), var(--scrim-media-top, 0.25)) 78%,
+    rgba(var(--scrim-ink), var(--scrim-media-top, 0.25)) 100%
+  );
+}
+
+
+/* ===========================================================================
+   3. The copy
+   ===========================================================================
+   Positioned so that (a) it paints above the media frame, which had to become
+   a positioned element for its scrim, and (b) its own scrim can sit behind it.
+   ------------------------------------------------------------------------ */
+
+.chapter__copy {
+  position: relative;
+  z-index: 2;
+
+  /* Fade in as the chapter settles, hold, release as it leaves.
+     At p = 0.5 (the no-JS fallback) this is a flat 1. */
+  opacity: var(--copy-reveal, 1);
+
+  /* Rise into place, then drift up slightly on the way out. Both terms are
+     zero when the chapter is settled. */
+  transform: translate3d(
+    0,
+    calc(
+      var(--copy-rise, 14px) * (1 - var(--copy-in, 1))
+      - var(--copy-release, 8px) * (1 - var(--copy-out, 1))
+    ),
+    0
+  );
+}
+
+/* The panel behind the copy.
+   Vertical edges are feathered by gradient stops that sit inside the negative
+   inset, so the text itself is always over the flat, full-strength part of the
+   scrim — never over the fade. Horizontal edges are feathered with a mask; if
+   a browser does not support masks the panel simply has straight sides, which
+   is a cosmetic difference, not a legibility one. */
+.chapter:not([data-copy-scrim="off"]) .chapter__copy::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--scrim-bleed-y, 2.5rem)) calc(-1 * var(--scrim-bleed-x, 1.5rem));
+  z-index: -1;
+  pointer-events: none;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--scrim-ink), 0) 0,
+    rgba(var(--scrim-ink), var(--scrim-copy-alpha, 0.7)) var(--scrim-feather-y, 2.25rem),
+    rgba(var(--scrim-ink), var(--scrim-copy-alpha, 0.7)) calc(100% - var(--scrim-feather-y, 2.25rem)),
+    rgba(var(--scrim-ink), 0) 100%
+  );
+
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--scrim-feather-x, 1.25rem),
+    #000 calc(100% - var(--scrim-feather-x, 1.25rem)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--scrim-feather-x, 1.25rem),
+    #000 calc(100% - var(--scrim-feather-x, 1.25rem)),
+    transparent 100%
+  );
+}
+
+/* Text colours for copy sitting on the scrim. The eyebrow is a lightened brass
+   rather than --c-accent, because --c-accent (#B4813A) only reaches about
+   2.6:1 on this background — nowhere near enough. #E9C68F reaches ~5.3:1.
+   The shadow is belt-and-braces for any unusually bright patch of artwork. */
+.chapter:not([data-copy-scrim="off"]) .chapter__eyebrow {
+  color: #e9c68f;
+  text-shadow: 0 1px 2px rgba(var(--scrim-ink), 0.55);
+}
+
+.chapter:not([data-copy-scrim="off"]) .chapter__headline,
+.chapter:not([data-copy-scrim="off"]) .chapter__body {
+  color: var(--c-paper, #fbf8f3);
+  text-shadow: 0 1px 2px rgba(var(--scrim-ink), 0.55);
+}
+
+
+/* ===========================================================================
+   4. A little stagger
+   ===========================================================================
+   The three lines arrive fractionally apart. Same scroll-linked driver, just
+   different distances — no delays, no timers, so scrubbing backwards is exact.
+   All three resolve to translate 0 at the no-JS fallback.
+   ------------------------------------------------------------------------ */
+
+.chapter__eyebrow {
+  transform: translate3d(0, calc(2px * (1 - var(--copy-in, 1))), 0);
+}
+
+.chapter__headline {
+  transform: translate3d(0, calc(6px * (1 - var(--copy-in, 1))), 0);
+}
+
+.chapter__body {
+  transform: translate3d(0, calc(10px * (1 - var(--copy-in, 1))), 0);
+}
+
+
+/* ===========================================================================
+   5. Deliberate promotion
+   ===========================================================================
+   Only the chapter currently filling the screen gets a compositor layer. A
+   blanket `will-change` on eight full-bleed images would cost far more memory
+   than it saves. `.is-active` is set by scroll.js; with JS off it never
+   appears, and nothing here depends on it for visibility.
+   ------------------------------------------------------------------------ */
+
+.chapter.is-active .chapter__media img,
+.chapter.is-active .chapter__copy {
+  will-change: transform, opacity;
+}
+
+
+/* ===========================================================================
+   6. Larger screens — a bigger room, a bigger camera move
+   ===========================================================================
+   Mobile keeps the smallest transforms: less work per frame, and a big push-in
+   on a phone reads as jitter rather than as cinema.
+   ------------------------------------------------------------------------ */
+
+@media (min-width: 48em) {
+  .chapter {
+    --cam-zoom: 1.07;
+    --cam-range: 0.08;   /* 1.07 -> 1.15 across the chapter */
+    --cam-drift: 2.4%;   /* overscan at zoom 1.07 is 3.5% per edge */
+
+    --copy-rise: 22px;
+    --copy-release: 14px;
+
+    --scrim-bleed-y: 3rem;
+    --scrim-bleed-x: 2rem;
+    --scrim-feather-y: 2.75rem;
+    --scrim-feather-x: 1.75rem;
+  }
+
+  .chapter__headline {
+    transform: translate3d(0, calc(10px * (1 - var(--copy-in, 1))), 0);
+  }
+
+  .chapter__body {
+    transform: translate3d(0, calc(16px * (1 - var(--copy-in, 1))), 0);
+  }
+}
+
+
+/* ===========================================================================
+   7. Reduced motion — real CSS, not a JavaScript branch
+   ===========================================================================
+   Clean static panels. Zero transforms anywhere, no camera move, no rise, no
+   stagger. All that survives is a plain opacity fade right at the very edges
+   of a chapter's travel, and the scrims — because those are legibility, not
+   decoration, and removing them would make the text harder to read rather
+   than calmer.
+
+   scroll.js independently stops its animation loop under this preference, but
+   this block is what actually does the flattening: it holds even if the script
+   never runs, and it is what a visitor sees if they change the preference with
+   the page already open.
+
+   Last block in the file so it wins on order against the min-width block above.
+   ------------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .chapter {
+    /* A short, plain fade at the extremes only; flat 1 for almost the whole
+       of the chapter's travel — and flat 1 outright when --p is unset. */
+    --copy-in: clamp(0, calc((var(--p-clamped, 0.5) - 0.04) / 0.12), 1);
+    --copy-out: clamp(0, calc((0.98 - var(--p-clamped, 0.5)) / 0.12), 1);
+    --copy-reveal: min(var(--copy-in, 1), var(--copy-out, 1));
+  }
+
+  .chapter__media img,
+  .chapter__copy,
+  .chapter__eyebrow,
+  .chapter__headline,
+  .chapter__body {
+    transform: none;
+  }
+
+  .chapter.is-active .chapter__media img,
+  .chapter.is-active .chapter__copy {
+    will-change: auto;
+  }
+}
+
+
+/* =============================================================================
+   INTEGRATION NOTE: for the integrator — items outside this file
+   =============================================================================
+
+   A. LOAD ORDER. `chapters.css` must be linked AFTER `layout.css`:
+
+          <link rel="stylesheet" href="css/tokens.css">
+          <link rel="stylesheet" href="css/layout.css">
+          <link rel="stylesheet" href="css/chapters.css">
+
+      Sections 3 sets the copy colour that carries the 4.5:1 contrast guarantee
+      over the artwork. If layout.css lands after this file and sets a colour on
+      `.chapter__eyebrow` / `.chapter__headline` / `.chapter__body` at the same
+      specificity, it wins and the guarantee is lost.
+
+   B. WHAT THIS FILE ASSUMES ABOUT THE CHAPTER LAYOUT. It assumes the copy is
+      laid over the artwork (the usual full-bleed scroll-journey treatment), so
+      it applies a scrim and light text. Everything still works if the copy is
+      placed beside the artwork instead — you just get a dark translucent panel
+      behind the copy, which is legible but may not be the intended look.
+
+      If Structure wants the copy on the page background in ordinary ink,
+      opt a chapter out with a single attribute in index.html — no edit to this
+      file is needed:
+
+          <section class="chapter" data-copy-scrim="off" …>
+
+      That switches off the copy panel and the colour overrides. The camera move
+      on the artwork and the media veil are unaffected.
+
+   C. `.chapter__media` GETS `position: relative` AND `overflow: hidden` HERE.
+      Both are load-bearing for the effect (the scrim needs a containing block,
+      the frame needs to clip the scaled image). Please do not set
+      `overflow: visible` on it in layout.css, or the zoomed artwork will spill
+      out over the neighbouring chapters.
+
+      `.chapter__copy` gets `position: relative; z-index: 2` for the same
+      reason — without it the now-positioned media frame would paint on top of
+      the copy in an overlapping layout.
+
+   D. THE ARTWORK ELEMENT. This file targets `.chapter__media img`. Put exactly
+      one `<img>` inside `[data-media]`, with real alt text, and
+      `loading="lazy" decoding="async"` on every chapter except the first.
+
+   E. SMOOTH ANCHOR SCROLLING to `#tour` is not implemented in JS by design. If
+      you want it, use the native property in tokens.css, gated on the
+      preference:
+
+          @media (prefers-reduced-motion: no-preference) {
+            html { scroll-behavior: smooth; }
+          }
+   ========================================================================== */

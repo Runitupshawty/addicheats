@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>[PROPERTY NAME] — [30 residences in the heart of [NEIGHBORHOOD]]</title>
+  <meta name="description" content="[PROPERTY NAME] is a 30-residence building at [123 EXAMPLE ST], [CITY], [ST]. Studios, one- and two-bedroom homes. Scroll the building from the street to the courtyard, then book a tour.">
+  <meta name="theme-color" content="#FBF8F3">
+  <meta name="color-scheme" content="light">
+  <link rel="canonical" href="https://example.com/">
+
+  <!-- Open Graph — link previews (Facebook, iMessage, Slack, LinkedIn) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="[PROPERTY NAME]">
+  <meta property="og:title" content="[PROPERTY NAME] — [30 residences in the heart of [NEIGHBORHOOD]]">
+  <meta property="og:description" content="Thirty residences at [123 EXAMPLE ST], [CITY], [ST]. Studios from [$1,250–$1,400]. Take the scroll-through tour, then book a visit.">
+  <meta property="og:url" content="https://example.com/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://example.com/assets/exterior-aerial.svg">
+  <meta property="og:image:alt" content="Illustrated aerial view of [PROPERTY NAME], a four-storey brick residential building with a planted courtyard.">
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="[PROPERTY NAME] — [30 residences in the heart of [NEIGHBORHOOD]]">
+  <meta name="twitter:description" content="Thirty residences at [123 EXAMPLE ST], [CITY], [ST]. Take the scroll-through tour, then book a visit.">
+  <meta name="twitter:image" content="https://example.com/assets/exterior-aerial.svg">
+  <meta name="twitter:image:alt" content="Illustrated aerial view of [PROPERTY NAME], a four-storey brick residential building with a planted courtyard.">
+
+  <!-- Inline favicon: a brass hairline monogram. Kept as a data URI so the page
+       still makes zero external requests. -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316120E'/%3E%3Crect x='6.5' y='6.5' width='19' height='19' fill='none' stroke='%23B4813A' stroke-width='1.5'/%3E%3Crect x='13' y='16' width='6' height='9.5' fill='%23B4813A'/%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/chapters.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <span class="site-header__name" data-bind="name">[PROPERTY NAME]</span>
+    <a class="site-header__cta" href="#tour" data-bind="cta.header">Book a Tour</a>
+  </header>
+
+  <main class="journey" id="main" tabindex="-1">
+
+    <noscript>
+      <div class="noscript-note" role="note">
+        <p class="noscript-note__title">JavaScript is off — and that is fine.</p>
+        <p>
+          Every chapter below, the address, the phone number and the floor-plan
+          drawings are plain HTML and are fully readable as-is. Only three
+          conveniences are unavailable: the live copy pulled from
+          <code>data/property.js</code>, the tabbed floor-plan switcher (all
+          plans are listed instead), and the tour request form. To book a tour,
+          call <a href="tel:+15555550100">[(555) 555-0100]</a> or email
+          <a href="mailto:leasing@example.com">[leasing@example.com]</a>.
+        </p>
+      </div>
+    </noscript>
+
+    <!-- 1 ─ Arrival ─────────────────────────────────────────────────────── -->
+    <section class="chapter chapter--hero" id="ch-arrival"
+             data-chapter="arrival" data-art="exterior-aerial"
+             aria-labelledby="ch-arrival-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/exterior-aerial.svg"
+             alt="Aerial illustration of [PROPERTY NAME]: a four-storey brick residential building set around a planted inner courtyard, seen from above with the surrounding street grid and rooftops of [NEIGHBORHOOD]."
+             decoding="async" fetchpriority="high" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.arrival.eyebrow">[Arrival]</p>
+        <h1 class="chapter__title" id="ch-arrival-title" data-bind="name">[PROPERTY NAME]</h1>
+        <p class="chapter__tagline" data-bind="tagline">[30 residences in the heart of [NEIGHBORHOOD]]</p>
+        <h2 class="chapter__headline" data-bind="chapters.arrival.headline">[Arrival headline — one line, set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.arrival.body">[Arrival body copy — two or three sentences describing the first sight of the building. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- 2 ─ Approach ────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-approach"
+             data-chapter="approach" data-art="exterior-street"
+             aria-labelledby="ch-approach-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/exterior-street.svg"
+             alt="Street-level illustration of the building's façade: brick piers, tall shopfront-style ground-floor windows, and a recessed entry bay under a brass canopy, with street trees and parked bicycles in front."
+             loading="lazy" decoding="async" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.approach.eyebrow">[Approach]</p>
+        <h2 class="chapter__headline" id="ch-approach-title" data-bind="chapters.approach.headline">[Approach headline — set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.approach.body">[Approach body copy — the building as you meet it from the sidewalk. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- 3 ─ Entrance ────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-entrance"
+             data-chapter="entrance" data-art="lobby"
+             aria-labelledby="ch-entrance-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/lobby.svg"
+             alt="Illustration of the lobby seen through the entry doors: a long timber-panelled wall, terrazzo floor, a brass mail wall, a bench and a pendant light over the concierge desk."
+             loading="lazy" decoding="async" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.entrance.eyebrow">[Entrance]</p>
+        <h2 class="chapter__headline" id="ch-entrance-title" data-bind="chapters.entrance.headline">[Entrance headline — set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.entrance.body">[Entrance body copy — crossing the threshold, the lobby, the mail wall, the stair. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- 4 ─ Living ──────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-living"
+             data-chapter="living" data-art="living"
+             aria-labelledby="ch-living-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/living.svg"
+             alt="Illustration of a residence's living room: a wide window with deep reveals, oak floors, a low sofa and side table, and a doorway through to the hall."
+             loading="lazy" decoding="async" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.living.eyebrow">[Living]</p>
+        <h2 class="chapter__headline" id="ch-living-title" data-bind="chapters.living.headline">[Living headline — set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.living.body">[Living body copy — light, ceiling height, the shape of the main room. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- 5 ─ Kitchen ─────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-kitchen"
+             data-chapter="kitchen" data-art="kitchen"
+             aria-labelledby="ch-kitchen-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/kitchen.svg"
+             alt="Illustration of the kitchen: a run of flat-front cabinets under a stone counter, open shelving, a tall pantry, and brass tapware over an undermount sink."
+             loading="lazy" decoding="async" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.kitchen.eyebrow">[Kitchen]</p>
+        <h2 class="chapter__headline" id="ch-kitchen-title" data-bind="chapters.kitchen.headline">[Kitchen headline — set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.kitchen.body">[Kitchen body copy — counters, storage, appliances, how it works day to day. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- 6 ─ Rest ────────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-rest"
+             data-chapter="rest" data-art="bedroom"
+             aria-labelledby="ch-rest-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/bedroom.svg"
+             alt="Illustration of a bedroom and adjoining bath: a bed against a quiet wall beside a curtained window, a wardrobe, and through the open door a tiled bathroom with a wall-hung vanity and mirror."
+             loading="lazy" decoding="async" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.rest.eyebrow">[Rest]</p>
+        <h2 class="chapter__headline" id="ch-rest-title" data-bind="chapters.rest.headline">[Rest headline — set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.rest.body">[Rest body copy — the bedroom, the bath, quiet and storage. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- 7 ─ Amenities ───────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-amenities"
+             data-chapter="amenities" data-art="amenity-courtyard"
+             aria-labelledby="ch-amenities-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/amenity-courtyard.svg"
+             alt="Illustration of the shared courtyard: planted beds and a mature tree between brick wings, seating and a long table, with the glazed gym and laundry rooms visible behind the ground-floor windows."
+             loading="lazy" decoding="async" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.amenities.eyebrow">[Amenities]</p>
+        <h2 class="chapter__headline" id="ch-amenities-title" data-bind="chapters.amenities.headline">[Amenities headline — set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.amenities.body">[Amenities body copy — courtyard, gym, laundry, bike storage, parcel room. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- 8 ─ Neighborhood ────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-neighborhood"
+             data-chapter="neighborhood" data-art="neighborhood"
+             aria-labelledby="ch-neighborhood-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/neighborhood.svg"
+             alt="Illustration of [NEIGHBORHOOD] with the building marked in brass among the surrounding blocks: a main street of low storefronts, a park, a transit stop and the river a few streets away."
+             loading="lazy" decoding="async" width="1600" height="1000">
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.neighborhood.eyebrow">[Neighborhood]</p>
+        <h2 class="chapter__headline" id="ch-neighborhood-title" data-bind="chapters.neighborhood.headline">[Neighborhood headline — set in property.js]</h2>
+        <p class="chapter__body" data-bind="chapters.neighborhood.body">[Neighborhood body copy — what is on the block, how you get around. Edit this in data/property.js.]</p>
+      </div>
+    </section>
+
+    <!-- Floor plans ─────────────────────────────────────────────────────── -->
+    <section class="plans" id="floorplans" aria-labelledby="plans-title">
+      <div class="plans__intro">
+        <p class="section__eyebrow">Floor plans</p>
+        <h2 class="section__title" id="plans-title">Thirty homes, three layouts.</h2>
+        <p class="section__lede">
+          Studios, one-bedrooms and two-bedrooms. Dimensions are approximate and
+          plans are drawn as placeholders pending final as-built drawings.
+        </p>
+      </div>
+      <div class="plans__tabs" data-plan-tabs></div>
+      <div class="plans__panels" data-plan-panels></div>
+      <noscript>
+        <div class="noscript-note" role="note">
+          <p class="noscript-note__title">Floor plans without JavaScript</p>
+          <p>
+            The tabbed plan switcher needs JavaScript. All three drawings are
+            below, and every plan is also on the printed leasing sheet — ask for
+            it at <a href="mailto:leasing@example.com">[leasing@example.com]</a>.
+          </p>
+          <ul class="noscript-note__plans">
+            <li><a href="assets/plan-studio.svg">Studio — [480] sq ft, [$1,250–$1,400], [2 available]</a></li>
+            <li><a href="assets/plan-1br.svg">One Bedroom — [680] sq ft, [$1,550–$1,750], [5 available]</a></li>
+            <li><a href="assets/plan-2br.svg">Two Bedroom — [950] sq ft, [$1,950–$2,300], [Waitlist]</a></li>
+          </ul>
+        </div>
+      </noscript>
+    </section>
+
+    <!-- Book a tour ─────────────────────────────────────────────────────── -->
+    <section class="tour" id="tour" aria-labelledby="tour-title">
+      <div class="tour__intro">
+        <p class="section__eyebrow">Visit</p>
+        <h2 class="section__title" id="tour-title">Book a tour.</h2>
+        <p class="section__lede">
+          Tell us when suits and which layout you have in mind. We answer the
+          same day during leasing-office hours.
+        </p>
+      </div>
+
+      <!-- Fields (name, contact, move-in, unit) are built by js/site.js. -->
+      <form class="tour__form" data-tour-form novalidate></form>
+
+      <div class="tour__details" data-tour-details></div>
+
+      <noscript>
+        <div class="noscript-note noscript-note--tour" role="note">
+          <p class="noscript-note__title">Request a tour without JavaScript</p>
+          <p>
+            The form above is built with JavaScript. With it disabled, reach the
+            leasing office directly — both routes go to the same inbox and phone.
+          </p>
+          <ul class="noscript-note__contact">
+            <li>
+              <a class="button button--primary"
+                 href="mailto:leasing@example.com?subject=Tour%20request%20%E2%80%94%20%5BPROPERTY%20NAME%5D&amp;body=Name%3A%0APhone%20or%20email%3A%0APreferred%20move-in%20date%3A%0ALayout%20of%20interest%20(Studio%20%2F%20One%20Bedroom%20%2F%20Two%20Bedroom)%3A%0APreferred%20tour%20times%3A%0A">Email [leasing@example.com]</a>
+            </li>
+            <li>
+              <a class="button button--ghost" href="tel:+15555550100">Call [(555) 555-0100]</a>
+            </li>
+            <li class="noscript-note__meta">
+              [123 EXAMPLE ST], [CITY], [ST] [00000] &middot; [Mon–Fri 9–6, Sat 10–4]
+            </li>
+          </ul>
+        </div>
+      </noscript>
+    </section>
+
+  </main>
+
+  <a class="sticky-cta" href="#tour" data-sticky-cta>Book a Tour</a>
+
+  <footer class="site-footer" data-footer>
+    <noscript>
+      <div class="noscript-note noscript-note--footer" role="note">
+        <p class="noscript-note__title">[PROPERTY NAME]</p>
+        <p>
+          [123 EXAMPLE ST], [CITY], [ST] [00000] &middot;
+          <a href="tel:+15555550100">[(555) 555-0100]</a> &middot;
+          <a href="mailto:leasing@example.com">[leasing@example.com]</a> &middot;
+          [Mon–Fri 9–6, Sat 10–4]
+        </p>
+        <p>Equal Housing Opportunity.</p>
+        <p>Illustrations are placeholders pending photography.</p>
+        <p>[Pricing and availability subject to change.]</p>
+      </div>
+    </noscript>
+  </footer>
+
+  <script src="data/property.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/scroll.js"></script>
+</body>
+</html>

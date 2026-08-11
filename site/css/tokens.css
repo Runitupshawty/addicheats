@@ -1,0 +1,280 @@
+/* =============================================================================
+   tokens.css — design system only
+   Owner: Structure. Nothing component-specific lives here.
+
+   Contents
+     1. Reset
+     2. Palette (the nine contract tokens + a few strictly-derived helpers)
+     3. Typography (two stacks, fluid scale, measures)
+     4. Space scale
+     5. Radii, hairlines, shadows
+     6. Layout widths and gutters
+     7. Motion primitives (durations/easings only — Motion owns the animations)
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   1. Reset — modern, minimal, opinionated only where it prevents bugs
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+picture,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+svg,
+video {
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p,
+li,
+figcaption {
+  text-wrap: pretty;
+}
+
+ul[class],
+ol[class] {
+  list-style: none;
+  padding: 0;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+:target {
+  scroll-margin-block-start: var(--space-2xl, 4rem);
+}
+
+/* -----------------------------------------------------------------------------
+   2. Palette
+   The nine tokens below are fixed by the build contract. The `-deep` / `-invert`
+   entries are derived helpers that exist ONLY to keep text contrast >= 4.5:1;
+   they never replace a contract token.
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* --- contract palette --------------------------------------------------- */
+  --c-ink: #16120e;      /* primary text, dark panels                          */
+  --c-paper: #fbf8f3;    /* page background                                    */
+  --c-card: #f1eade;     /* cards, insets                                      */
+  --c-accent: #b4813a;   /* brass accent, CTAs, rules                          */
+  --c-muted: #6b6157;    /* secondary text            5.7:1 on --c-paper       */
+  --c-rule: #e4dacb;     /* hairlines, borders                                 */
+  --c-sky: #cbd5d8;      /* SVG sky / glass                                    */
+  --c-stone: #b9ae9e;    /* SVG masonry / mid-tone                             */
+  --c-shadow: #8a7f72;   /* SVG shading                                        */
+
+  /* --- derived: text-safe variants ---------------------------------------- */
+  /* Raw --c-accent is 3.2:1 on paper — decorative + large display only.       */
+  --c-accent-deep: #8a5f22;    /* brass as TEXT           5.3:1 on --c-paper   */
+  --c-accent-hover: #6f4b1a;   /* pressed / hovered brass                      */
+  --c-ink-soft: #2a231b;       /* softened ink for large dark fills            */
+  --c-paper-invert: #f6f1e8;   /* body text ON ink       16.6:1 on --c-ink     */
+  --c-muted-invert: #b9ae9e;   /* secondary text ON ink   8.6:1 on --c-ink     */
+  --c-rule-invert: #3a3128;    /* hairlines ON ink                             */
+  --c-danger: #9a2f22;         /* form errors             7.0:1 on --c-paper   */
+  --c-focus: #8a5f22;          /* focus ring                                   */
+
+  /* --- alpha washes (overlays, scrims, hover fills) ----------------------- */
+  --c-ink-a08: rgb(22 18 14 / 0.08);
+  --c-ink-a12: rgb(22 18 14 / 0.12);
+  --c-ink-a60: rgb(22 18 14 / 0.6);
+  --c-ink-a82: rgb(22 18 14 / 0.82);
+  --c-accent-a12: rgb(180 129 58 / 0.12);
+  --c-accent-a30: rgb(180 129 58 / 0.3);
+  --c-paper-a92: rgb(251 248 243 / 0.92);
+
+  /* --- semantic surface roles --------------------------------------------- */
+  --surface-page: var(--c-paper);
+  --surface-raised: var(--c-card);
+  --surface-dark: var(--c-ink);
+  --text-primary: var(--c-ink);
+  --text-secondary: var(--c-muted);
+  --text-on-dark: var(--c-paper-invert);
+  --text-on-dark-secondary: var(--c-muted-invert);
+  --border-hairline: var(--c-rule);
+
+  /* -----------------------------------------------------------------------
+     3. Typography
+     -------------------------------------------------------------------- */
+  --font-display: "Bitstream Charter", "Liberation Serif", Georgia, "Times New Roman", serif;
+  --font-body: "Liberation Sans", "DejaVu Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Fluid scale, 390px → 1440px viewport. Ratio ≈ 1.2 small / 1.33 large.    */
+  --step--2: clamp(0.6875rem, 0.671rem + 0.068vw, 0.75rem);
+  --step--1: clamp(0.8125rem, 0.796rem + 0.068vw, 0.875rem);
+  --step-0:  clamp(1rem, 0.966rem + 0.14vw, 1.125rem);
+  --step-1:  clamp(1.2rem, 1.102rem + 0.4vw, 1.5rem);
+  --step-2:  clamp(1.44rem, 1.256rem + 0.755vw, 2rem);
+  --step-3:  clamp(1.728rem, 1.42rem + 1.264vw, 2.67rem);
+  --step-4:  clamp(2.074rem, 1.56rem + 2.106vw, 3.553rem);
+  --step-5:  clamp(2.488rem, 1.657rem + 3.412vw, 5rem);
+  --step-6:  clamp(2.986rem, 1.6rem + 5.69vw, 6.25rem);
+
+  --lh-tight: 1.04;
+  --lh-snug: 1.16;
+  --lh-heading: 1.1;
+  --lh-body: 1.6;
+  --lh-loose: 1.75;
+
+  --ls-display: -0.022em;
+  --ls-heading: -0.012em;
+  --ls-body: 0.001em;
+  --ls-eyebrow: 0.18em;
+  --ls-caps: 0.09em;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 700;
+
+  /* Reading measures */
+  --measure-tight: 26ch;
+  --measure: 34ch;
+  --measure-wide: 62ch;
+
+  /* -----------------------------------------------------------------------
+     4. Space scale (base 4px, geometric-ish)
+     -------------------------------------------------------------------- */
+  --space-3xs: 0.25rem;   /*  4px */
+  --space-2xs: 0.5rem;    /*  8px */
+  --space-xs: 0.75rem;    /* 12px */
+  --space-sm: 1rem;       /* 16px */
+  --space-md: 1.5rem;     /* 24px */
+  --space-lg: 2rem;       /* 32px */
+  --space-xl: 3rem;       /* 48px */
+  --space-2xl: 4.5rem;    /* 72px */
+  --space-3xl: 7rem;      /* 112px */
+  --space-4xl: 10rem;     /* 160px */
+
+  /* Fluid rhythm — used for section padding so whitespace stays generous     */
+  --space-section: clamp(4rem, 2.2rem + 7.4vw, 9rem);
+  --space-gutter: clamp(1.25rem, 0.55rem + 2.9vw, 4rem);
+  --space-flow: clamp(1rem, 0.8rem + 0.82vw, 1.5rem);
+
+  /* -----------------------------------------------------------------------
+     5. Radii, hairlines, shadows
+     -------------------------------------------------------------------- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --hairline: 1px;
+  --border-thin: var(--hairline) solid var(--c-rule);
+  --border-accent: var(--hairline) solid var(--c-accent-a30);
+
+  /* Low, warm, architectural. Never a generic grey blur.                     */
+  --shadow-xs: 0 1px 2px rgb(22 18 14 / 0.05);
+  --shadow-sm: 0 2px 6px rgb(22 18 14 / 0.06), 0 1px 2px rgb(22 18 14 / 0.04);
+  --shadow-md: 0 10px 24px -12px rgb(22 18 14 / 0.18), 0 2px 6px rgb(22 18 14 / 0.05);
+  --shadow-lg: 0 30px 60px -28px rgb(22 18 14 / 0.28), 0 6px 16px -8px rgb(22 18 14 / 0.1);
+  --shadow-cta: 0 12px 28px -14px rgb(22 18 14 / 0.42);
+
+  /* -----------------------------------------------------------------------
+     6. Layout widths
+     -------------------------------------------------------------------- */
+  --width-full: 100%;
+  --width-wide: 90rem;    /* 1440 — the outer shell cap                       */
+  --width-page: 76rem;    /* 1216 — standard content frame                    */
+  --width-text: 44rem;    /*  704 — prose column                              */
+  --width-narrow: 32rem;  /*  512 — forms, single-column cards                */
+
+  --header-height: clamp(3.5rem, 3.1rem + 1.7vw, 4.5rem);
+  --chapter-min-height: 100svh;
+
+  /* -----------------------------------------------------------------------
+     7. Motion primitives — values only.
+     Motion (chapters.css / scroll.js) owns every chapter animation; these are
+     here so shell affordances (sticky CTA, hovers, focus) stay consistent.
+     -------------------------------------------------------------------- */
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 480ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Fallbacks for the custom properties Motion writes at runtime, so the page
+     is never broken before/without js/scroll.js. Motion overwrites these.     */
+  --scroll-progress: 0;
+
+  color-scheme: light;
+}
