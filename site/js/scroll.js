@@ -158,9 +158,15 @@
    * The chapter arrives holding frame 0 for a beat and leaves holding the last
    * frame for a beat, instead of the clip being half over by the time the
    * chapter has finished sliding into view.
+   *
+   * These are the DEFAULT edges. The real ones are computed per chapter in
+   * measure() — see `reachableScrubWindow()` for why that matters.
    */
   var VIDEO_SCRUB_IN = 0.1;
   var VIDEO_SCRUB_OUT = 0.9;
+
+  /** Refuse to squeeze a whole clip into a narrower window of `--p` than this. */
+  var VIDEO_SCRUB_MIN_SPAN = 0.25;
 
   /* ---------------------------------------------------------------------- *
    * Module state
@@ -179,6 +185,12 @@
 
   /** Which rendition the current viewport wants. Recomputed in measure(). */
   var videoUseHD = false;
+
+  /**
+   * Which container this browser can actually decode: 'mp4', 'webm', or ''
+   * when neither. Probed once, lazily, in canDecode().
+   */
+  var videoFormat = null;
 
   /** Cached viewport height and maximum scrollable distance. */
   var viewportH = 1;
@@ -303,6 +315,12 @@
     // Picking a video rendition needs `innerWidth`, which is a layout read, so
     // it happens here with the other reads rather than once per frame.
     chooseRendition();
+
+    // The scrub window depends on the geometry that was just measured, so it
+    // is derived here too — never per frame.
+    for (var j = 0; j < records.length; j++) {
+      if (records[j].vid) reachableScrubWindow(records[j]);
+    }
 
     // Force the next update() to write everything, since the maths just moved.
     lastScrollY = -1;
@@ -461,17 +479,32 @@
       target: -1,       // last time we asked for, for debugging
       gap: Infinity,    // px between this chapter's box and the viewport
       rank: Infinity,   // gap, biased in favour of clips already resident
-      p: 0
+      p: 0,
+      // The window of `--p` the clip is mapped across. Recomputed per chapter
+      // in measure(); see reachableScrubWindow().
+      scrubIn: VIDEO_SCRUB_IN,
+      scrubOut: VIDEO_SCRUB_OUT
     };
 
     // The poster is also painted as the media frame's background (see
     // chapters.css), which is what guarantees "never a black box" even if the
     // element itself fails in some way we have not thought of.
+    //
+    // The URL is absolutised first, and that is not fussiness. A relative URL
+    // inside a custom property is resolved against the stylesheet the `var()`
+    // is USED in, not against the document — so `assets/video/x-poster.jpg`
+    // handed straight through would be fetched as `css/assets/video/…` from
+    // chapters.css and 404. Structure caught this one; it showed up as two
+    // black rectangles at 1440.
     var poster = el.getAttribute('poster');
     if (poster && chapter) {
+      var href = poster;
+      try {
+        href = new URL(poster, document.baseURI).href;
+      } catch (err) { /* pre-URL browsers keep the relative form */ }
       var media = el.closest ? el.closest('.chapter__media') : null;
       (media || chapter).style.setProperty(
-        '--chapter-poster', 'url("' + poster.replace(/"/g, '%22') + '")'
+        '--chapter-poster', 'url("' + href.replace(/"/g, '%22') + '")'
       );
     }
 
@@ -509,10 +542,67 @@
     videoUseHD = !save && w >= VIDEO_HD_MIN_DEVICE_PX;
   }
 
-  /** The URL this element should be given right now, or '' if it has none. */
+  /**
+   * Which container to ask for. Probed once and cached — `canPlayType` is
+   * cheap but not free, and the answer cannot change mid-session.
+   *
+   * MP4/H.264 is preferred wherever it is supported: it has hardware decode on
+   * essentially every phone and laptop shipped this decade, which for a clip
+   * being seeked dozens of times a second is the difference between the fan
+   * staying off and not, and Safari has no VP9 fallback worth relying on.
+   * WebM/VP9 is the fallback for builds without the proprietary decoder —
+   * Chromium-based browsers compiled from source, some Linux distributions'
+   * packages, and the headless build these checks run under.
+   *
+   * `canPlayType` returns 'probably' / 'maybe' / '' — anything non-empty is
+   * treated as a yes, since 'maybe' is what a browser says when it cannot know
+   * without fetching, and the `error` handler covers being wrong.
+   */
+  function decodableFormat() {
+    if (videoFormat !== null) return videoFormat;
+
+    videoFormat = '';
+    try {
+      var probe = document.createElement('video');
+      if (probe.canPlayType) {
+        if (probe.canPlayType('video/mp4; codecs="avc1.42E01E"')) {
+          videoFormat = 'mp4';
+        } else if (probe.canPlayType('video/webm; codecs="vp9"') ||
+                   probe.canPlayType('video/webm; codecs="vp8"')) {
+          videoFormat = 'webm';
+        }
+      }
+    } catch (err) {
+      videoFormat = '';
+    }
+    return videoFormat;
+  }
+
+  /**
+   * The URL this element should be given right now, or '' if it has none.
+   * Two independent choices: the container (what this browser can decode) and
+   * the rendition (what this viewport is worth). All four combinations exist
+   * on disk; any that are missing simply fall through.
+   */
   function pickVideoSrc(el) {
-    var hd = el.getAttribute('data-src-1080') || '';
-    var sd = el.getAttribute('data-src-720') || '';
+    var fmt = decodableFormat();
+    // Neither container is playable: hand back nothing at all, so no request
+    // is made and the poster is left in place. This is the correct outcome,
+    // not a failure — see the `error` handler for the other route to it.
+    if (!fmt) return '';
+
+    var suffix = fmt === 'webm' ? '-webm' : '';
+    var hd = el.getAttribute('data-src-1080' + suffix) || '';
+    var sd = el.getAttribute('data-src-720' + suffix) || '';
+
+    // Fall back to the other container if this one is not authored for this
+    // element — better a file that might not decode (the poster survives it)
+    // than no picture at all.
+    if (!hd && !sd) {
+      hd = el.getAttribute('data-src-1080') || '';
+      sd = el.getAttribute('data-src-720') || '';
+    }
+
     if (!hd) return sd;
     if (!sd) return hd;
     return videoUseHD ? hd : sd;
@@ -601,6 +691,18 @@
    */
   function onVideoError(st) {
     if (!st.src) return;  // fired while releasing; not a real failure
+
+    // `canPlayType` is advisory, and browsers do get it wrong — it answers for
+    // the container and codec string, not for this particular file. If the one
+    // we picked turns out to be undecodable, switch containers once, globally,
+    // and let every chapter retry with the other one. The URL will differ from
+    // the one recorded below, so the retry is allowed exactly once per element
+    // and the whole thing still terminates.
+    var err = st.el.error;
+    if (err && err.code === 4 && videoFormat === 'mp4') {
+      videoFormat = 'webm';
+    }
+
     st.failedSrc = st.src;
     releaseVideo(st);
     if (st.chapter) st.chapter.setAttribute('data-video-state', 'error');
@@ -653,13 +755,58 @@
   }
 
   /**
+   * Work out the window of `--p` a chapter can actually be observed across,
+   * and store it on its video state. Called from measure(), where the geometry
+   * is already being read.
+   *
+   * WHY THIS EXISTS. `--p` runs 0 -> 1 over a chapter's full travel, but a
+   * chapter cannot always travel its full range: you cannot scroll above the
+   * top of the document or below the bottom. The first chapter is the obvious
+   * case — at scroll 0 its top edge is already level with the top of the
+   * screen, so its `--p` starts at 0.5 and never goes lower. Map its clip
+   * across the nominal 0.1 -> 0.9 and the entire first half of the footage is
+   * unreachable: the hero opens on frame 60 of 121 and the shot is half over
+   * before the visitor has done anything.
+   *
+   * So the window is clamped to what is reachable. A chapter in the middle of
+   * the page is unaffected (it reaches 0 and 1, so the nominal edges win); the
+   * first and last chapters get a window that starts and ends where their
+   * travel really does.
+   */
+  function reachableScrubWindow(rec) {
+    var st = rec.vid;
+    if (!st) return;
+
+    var vh = viewportH;
+    var span = vh + rec.height;
+
+    // p at scroll 0, and p at the furthest the document can be scrolled.
+    var pAtTop = clamp01((vh - rec.top) / span);
+    var pAtEnd = clamp01((vh - (rec.top - maxScroll)) / span);
+
+    var lo = pAtTop > VIDEO_SCRUB_IN ? pAtTop : VIDEO_SCRUB_IN;
+    var hi = pAtEnd < VIDEO_SCRUB_OUT ? pAtEnd : VIDEO_SCRUB_OUT;
+
+    // A degenerate window would make the clip fly past in a few pixels of
+    // scrolling, which looks broken. Fall back to the nominal edges instead.
+    if (hi - lo < VIDEO_SCRUB_MIN_SPAN) {
+      lo = VIDEO_SCRUB_IN;
+      hi = VIDEO_SCRUB_OUT;
+    }
+
+    st.scrubIn = lo;
+    st.scrubOut = hi;
+  }
+
+  /**
    * Map this chapter's `--p` onto the clip. Strictly increasing in `p`, so
    * scrolling up runs the footage exactly backwards, and stopping stops it.
    */
   function scrubVideo(st) {
     if (!st.duration) return;
-    var span = VIDEO_SCRUB_OUT - VIDEO_SCRUB_IN;
-    var q = clamp01((st.p - VIDEO_SCRUB_IN) / span);
+    var span = st.scrubOut - st.scrubIn;
+    if (span <= 0) return;
+    var q = clamp01((st.p - st.scrubIn) / span);
     seekVideo(st, q * st.duration);
   }
 
@@ -1107,4 +1254,49 @@
    5. NOTHING IN THIS FILE TOUCHES `preventDefault`, wheel, touch or key events.
       If a later change to the site introduces a scroll-hijacking library, it
       will fight this engine and break the contract. Please don't.
+
+   ---------------------------------------------------------------------------
+   ROUND 2 ADDITIONS
+   ---------------------------------------------------------------------------
+
+   6. THE `<video>` MUST SHIP WITHOUT A `src` (index.html — Structure). This is
+      not a style preference, it is the mechanism. Because only this file ever
+      assigns one, three things are true at once: four clips never download on
+      page load, a visitor with JavaScript off downloads no video at all and
+      sees the `poster`, and a visitor who has asked for reduced motion is in
+      exactly the same position. Adding a `src` attribute or a `<source>`
+      child breaks all three simultaneously. index.html currently has this
+      right; this note exists so it stays that way.
+
+      Two attributes this file writes back onto the DOM, for chapters.css:
+
+        `--chapter-poster` — an inline custom property on `.chapter__media`,
+            holding the video's own `poster` URL, ABSOLUTISED. The absolute
+            form matters: a relative URL inside a custom property resolves
+            against the stylesheet the `var()` is used in, not the document,
+            so `assets/video/x.jpg` would be fetched from `css/` and 404.
+            (Thank you to Structure for catching that; it is fixed here now.)
+        `data-video-state` — on the `.chapter`: idle / loading / ready / error.
+            chapters.css hides the `<video>` outright on `error` so the poster
+            is what remains.
+
+   7. THE POSTER IS DELIBERATELY PAINTED TWICE. layout.css paints the four
+      poster stills on `.chapter[data-art=…]` from the stylesheet, which needs
+      no JavaScript and is therefore there before this file runs and if it
+      never runs. This file publishes the same URL to `--chapter-poster` for
+      chapters.css to paint on `.chapter__media`. Same image, same URL, one
+      download, two independent floors under "never a black box". Keep both.
+
+   8. IF THE FOOTAGE IS EVER RE-ENCODED, check two constants at the top of this
+      file: `VIDEO_FPS` (24) sizes the seek deadband, and the clips are assumed
+      to be a few seconds long and keyframed often — GOP 12 here, i.e. every
+      half second. A long clip with sparse keyframes will still work but will
+      feel rubbery, because every seek has to decode forward from further
+      away. Shorter and more keyframes is the direction to go, not fewer.
+
+   9. `SiteMotion.videos()` returns a plain snapshot of the scrub engine — one
+      row per clip with its src, readyState, currentTime, target, seek queue
+      and distance from the viewport. It is there for debugging and for the
+      automated checks; it copies values out rather than exposing the live
+      state, so nothing outside this file can steer the engine through it.
    ========================================================================== */

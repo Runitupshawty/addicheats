@@ -411,15 +411,19 @@
 
    It is styled as a self-contained chip with its own background, so it does
    not depend on being inside the media frame, inside the copy block, or on top
-   of any particular part of the picture. Measured at 6.4:1 worst case.
+   of any particular part of the picture.
+
+   Skin only — no `display`, no `inline-size`, no `position`, no placement.
+   layout.css puts the chip top-right of the frame, clear of both the fixed
+   header and the bottom-anchored copy, and it needs those properties to itself
+   to do that. The split is: Structure says where, Motion says what it looks
+   like.
    ------------------------------------------------------------------------ */
 
 .chapter [data-media-note],
 .chapter__media-note,
 .chapter__note {
-  display: inline-block;
-  max-inline-size: 34ch;
-  padding: 0.35em 0.7em;
+  padding: 0.4rem 0.7rem;
   border-radius: var(--radius-sm, 4px);
 
   background-color: rgba(var(--scrim-ink), 0.78);
