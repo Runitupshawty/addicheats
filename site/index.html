@@ -66,9 +66,17 @@
              data-chapter="arrival" data-art="exterior-aerial"
              aria-labelledby="ch-arrival-title">
       <div class="chapter__media" data-media>
-        <img src="assets/exterior-aerial.svg"
-             alt="Aerial illustration of [PROPERTY NAME]: a four-storey brick residential building set around a planted inner courtyard, seen from above with the surrounding street grid and rooftops of [NEIGHBORHOOD]."
-             decoding="async" fetchpriority="high" width="1600" height="1000">
+        <!-- Real footage. No `src` here on purpose — js/scroll.js picks 720 or
+             1080 from the viewport and only for chapters near the screen, so
+             four clips never download at once. The poster is what a visitor
+             sees with JavaScript off, or under prefers-reduced-motion. -->
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/exterior-aerial-720.mp4"
+               data-src-1080="assets/video/exterior-aerial-1080.mp4"
+               poster="assets/video/exterior-aerial-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note>Illustrative footage — not the actual property</p>
       </div>
       <div class="chapter__copy">
         <p class="chapter__eyebrow" data-bind="chapters.arrival.eyebrow">[Arrival]</p>
@@ -84,9 +92,13 @@
              data-chapter="approach" data-art="exterior-street"
              aria-labelledby="ch-approach-title">
       <div class="chapter__media" data-media>
-        <img src="assets/exterior-street.svg"
-             alt="Street-level illustration of the building's façade: brick piers, tall shopfront-style ground-floor windows, and a recessed entry bay under a brass canopy, with street trees and parked bicycles in front."
-             loading="lazy" decoding="async" width="1600" height="1000">
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/exterior-street-720.mp4"
+               data-src-1080="assets/video/exterior-street-1080.mp4"
+               poster="assets/video/exterior-street-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note>Illustrative footage — not the actual property</p>
       </div>
       <div class="chapter__copy">
         <p class="chapter__eyebrow" data-bind="chapters.approach.eyebrow">[Approach]</p>
@@ -116,9 +128,13 @@
              data-chapter="living" data-art="living"
              aria-labelledby="ch-living-title">
       <div class="chapter__media" data-media>
-        <img src="assets/living.svg"
-             alt="Illustration of a residence's living room: a wide window with deep reveals, oak floors, a low sofa and side table, and a doorway through to the hall."
-             loading="lazy" decoding="async" width="1600" height="1000">
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/living-720.mp4"
+               data-src-1080="assets/video/living-1080.mp4"
+               poster="assets/video/living-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note>Illustrative footage — not the actual property</p>
       </div>
       <div class="chapter__copy">
         <p class="chapter__eyebrow" data-bind="chapters.living.eyebrow">[Living]</p>
@@ -132,9 +148,13 @@
              data-chapter="kitchen" data-art="kitchen"
              aria-labelledby="ch-kitchen-title">
       <div class="chapter__media" data-media>
-        <img src="assets/kitchen.svg"
-             alt="Illustration of the kitchen: a run of flat-front cabinets under a stone counter, open shelving, a tall pantry, and brass tapware over an undermount sink."
-             loading="lazy" decoding="async" width="1600" height="1000">
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/kitchen-720.mp4"
+               data-src-1080="assets/video/kitchen-1080.mp4"
+               poster="assets/video/kitchen-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note>Illustrative footage — not the actual property</p>
       </div>
       <div class="chapter__copy">
         <p class="chapter__eyebrow" data-bind="chapters.kitchen.eyebrow">[Kitchen]</p>

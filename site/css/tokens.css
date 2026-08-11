@@ -153,6 +153,20 @@ legend {
   --c-danger: #9a2f22;         /* form errors             7.0:1 on --c-paper   */
   --c-focus: #8a5f22;          /* focus ring                                   */
 
+  /* --- derived: text set OVER artwork -------------------------------------
+     Round 2 makes every chapter a full-bleed scene with its copy over the
+     picture, so these three are load-bearing for contrast, not decoration.
+     The media veil (layout.css §4) guarantees the darkest 40% of a chapter
+     sits at >= 0.74 ink over whatever the artwork is. Worst case — pure white
+     artwork under a 0.74 veil — the composite is #4E4A46-ish, and against it:
+       --text-on-media            7.4:1
+       --text-on-media-secondary  6.6:1
+       --c-accent-light           5.2:1
+     Every one clears 4.5:1 before the text-shadow is counted.               */
+  --text-on-media: #f7f2e9;
+  --text-on-media-secondary: #ece4d6;
+  --c-accent-light: #edd0a0;   /* brass, lightened for use on dark artwork    */
+
   /* --- alpha washes (overlays, scrims, hover fills) ----------------------- */
   --c-ink-a08: rgb(22 18 14 / 0.08);
   --c-ink-a12: rgb(22 18 14 / 0.12);
@@ -161,6 +175,9 @@ legend {
   --c-accent-a12: rgb(180 129 58 / 0.12);
   --c-accent-a30: rgb(180 129 58 / 0.3);
   --c-paper-a92: rgb(251 248 243 / 0.92);
+
+  /* Ink as a bare triplet, for the alpha washes that sit over artwork.      */
+  --c-ink-rgb: 22 18 14;
 
   /* --- semantic surface roles --------------------------------------------- */
   --surface-page: var(--c-paper);
@@ -188,6 +205,13 @@ legend {
   --step-4:  clamp(2.074rem, 1.56rem + 2.106vw, 3.553rem);
   --step-5:  clamp(2.488rem, 1.657rem + 3.412vw, 5rem);
   --step-6:  clamp(2.986rem, 1.6rem + 5.69vw, 6.25rem);
+
+  /* The property name. Capped well below --step-5 on purpose: the h1 now sits
+     inside a 100svh scene alongside four other lines, and a long placeholder
+     name has to be able to wrap to three lines without pushing the body copy
+     off a 900px-tall screen. Round 1 clipped the headline for exactly this
+     reason. Re-test with a 45-character name before raising the ceiling.    */
+  --step-hero: clamp(2.125rem, 1.31rem + 3.35vw, 4.125rem);
 
   --lh-tight: 1.04;
   --lh-snug: 1.16;

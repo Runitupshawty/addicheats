@@ -333,7 +333,25 @@ body.is-scrolled .site-header {
 }
 
 /* -----------------------------------------------------------------------------
-   4. Journey + generic chapter (box model only)
+   4. Journey + the chapter as a full-bleed scene
+   -----------------------------------------------------------------------------
+
+   ROUND 2 REBUILD. Round 1 drew each chapter as a small framed card with the
+   copy beside it, which read as a product page rather than a walk-through. A
+   chapter is now one scene: the media fills the whole 100svh section, edge to
+   edge, and the copy sits over it, bottom-anchored inside the content rail.
+
+   HOW THE MEDIA FILLS. `.chapter` is the containing block (position: relative,
+   zero padding — all the padding lives on `.chapter__copy` instead, so nothing
+   insets the picture). `.chapter__media` is taken out of flow with
+   `position: absolute; inset: 0`, so the chapter's height is set purely by the
+   copy against `min-block-size: 100svh`, and the media always matches it —
+   however tall the copy grows on a narrow screen.
+
+   That one declaration is written as `.journey .chapter__media` rather than
+   `.chapter__media`: css/chapters.css restates `position: relative` on the same
+   class, and it loads last. Two classes beats one, so this holds by specificity
+   instead of by load order. See INTEGRATION NOTE 4.
    -------------------------------------------------------------------------- */
 
 .journey {
@@ -350,62 +368,203 @@ body.is-scrolled .site-header {
 
 .chapter {
   position: relative;
+  /* Keeps every z-index below strictly local to the chapter. */
+  isolation: isolate;
+
   display: grid;
-  align-content: center;
-  gap: var(--space-lg);
+  grid-template-columns:
+    [full-start] minmax(var(--space-gutter), 1fr)
+    [content-start] minmax(0, var(--width-page)) [content-end]
+    minmax(var(--space-gutter), 1fr) [full-end];
+  /* The copy is the only in-flow child, so `end` is what bottom-anchors it. */
+  align-content: end;
+
   min-block-size: var(--chapter-min-height);
-  padding-block: var(--space-section);
-  padding-inline: var(--space-gutter);
-  scroll-margin-block-start: var(--header-height);
+  /* Deliberately zero. See the note above — padding here would inset the
+     full-bleed media. The copy carries its own. */
+  padding: 0;
+
+  background-color: var(--c-ink);
+  color: var(--text-on-media);
+  scroll-margin-block-start: 0;
 }
 
-.chapter__media {
-  position: relative;
+/* --- the still behind everything --------------------------------------------
+   The poster frame, painted on the CHAPTER, underneath the media frame. It is
+   the floor for "never a black box": it is in the stylesheet, so it is there
+   before any script runs, if no script ever runs, if the clip 404s, if the
+   codec is unsupported, and if the decoder gives up mid-scrub.
+
+   js/scroll.js also publishes each poster to `--chapter-poster` for
+   chapters.css to paint on `.chapter__media`. That is the same image at the
+   same URL, so the two cost one download and agree with each other — this
+   simply does not depend on it. It is currently also the only one of the two
+   that works; see INTEGRATION NOTE 8.
+
+   Paths are relative to this file, hence the `../`. They are the only asset
+   filenames in the stylesheet, and they match the `poster` attributes in
+   index.html one for one.
+   -------------------------------------------------------------------------- */
+
+.chapter[data-art="exterior-aerial"],
+.chapter[data-art="exterior-street"],
+.chapter[data-art="living"],
+.chapter[data-art="kitchen"] {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.chapter[data-art="exterior-aerial"] {
+  background-image: url("../assets/video/exterior-aerial-poster.jpg");
+}
+
+.chapter[data-art="exterior-street"] {
+  background-image: url("../assets/video/exterior-street-poster.jpg");
+}
+
+.chapter[data-art="living"] {
+  background-image: url("../assets/video/living-poster.jpg");
+}
+
+.chapter[data-art="kitchen"] {
+  background-image: url("../assets/video/kitchen-poster.jpg");
+}
+
+/* --- the picture ----------------------------------------------------------- */
+
+.journey .chapter__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   overflow: hidden;
-  aspect-ratio: 5 / 4;
-  border-radius: var(--radius-md);
-  background-color: var(--c-card);
-  box-shadow: var(--shadow-md), inset 0 0 0 1px var(--c-ink-a08);
+  /* Round 1's card treatment, explicitly undone. */
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
+  /* Transparent, not the round 1 card fill: the chapter behind this is
+     carrying the poster still, and an opaque frame would hide it. */
+  background-color: transparent;
 }
 
-.chapter__media img {
+.chapter__media > img,
+.chapter__media > video {
   inline-size: 100%;
   block-size: 100%;
+  /* Beats the `height: auto` in the tokens reset for the video element. */
+  min-block-size: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
+/* --- the veil is NOT here ---------------------------------------------------
+   Deliberately. Copy over a photograph needs the photograph darkened where the
+   words are, but that treatment belongs to css/chapters.css, which now ships
+   it always-on: a veil on `.chapter__media::after` plus a feathered panel
+   painted as the background of `.chapter__copy`, both measured against
+   rendered pixels. Adding a second veil here does not make the page safer, it
+   makes it black — which is exactly what happened the first time this section
+   was written, and why it is now a comment.
+
+   What this file guarantees instead is the part Motion cannot see: that the
+   copy is placed inside the band the veil is weighted for, and that the text
+   colours below hold up on their own if chapters.css never loads. Contrast was
+   verified by screenshotting the real page with the text set to transparent
+   and sampling the lightest pixel inside every text run, at 390 / 768 / 1440,
+   with a deliberately long property name. See INTEGRATION NOTE 7.
+   -------------------------------------------------------------------------- */
+
+/* --- honesty label ----------------------------------------------------------
+   On the four chapters running real footage. Structure owns where it goes;
+   chapters.css owns what it looks like, and matches it on `[data-media-note]`
+   / `.chapter__note`, so the markup carries both. Everything below is position
+   only, plus a self-sufficient fallback skin for the no-chapters.css case.
+
+   Placed top-right of the frame and offset by the header height so it never
+   ends up underneath the fixed header, and never collides with the copy, which
+   is bottom-anchored. It reads as a photo credit, which is what it is.
+   -------------------------------------------------------------------------- */
+
+.chapter__note {
+  position: absolute;
+  z-index: 3;
+  inset-block-start: calc(var(--header-height) + var(--space-2xs));
+  inset-inline-end: var(--space-gutter);
+  max-inline-size: min(26rem, calc(100% - var(--space-gutter) * 2));
+  padding: 0.4rem 0.7rem;
+  background-color: rgb(var(--c-ink-rgb) / 0.78);
+  border-radius: var(--radius-sm);
+  color: var(--text-on-media);
+  font-size: var(--step--1);
+  line-height: 1.35;
+  text-align: end;
+  text-wrap: balance;
+}
+
+/* --- the copy ---------------------------------------------------------------
+   Bottom-left of the content rail, capped at a proper reading measure.
+
+   Spacing is set with MARGIN, not padding. chapters.css paints the copy panel
+   as a background on this element and uses its `padding` shorthand to give the
+   panel its bleed, so any padding declared here is overwritten. Margin is
+   untouched by that and does the same job from outside the panel: the block
+   start margin is a guard that only bites when the copy grows tall enough to
+   reach the fixed header, and the block end margin lifts it off the bottom
+   edge of the screen.
+   -------------------------------------------------------------------------- */
+
 .chapter__copy {
+  grid-column: content;
+  position: relative;
+  z-index: 2;
+
   display: grid;
   gap: var(--space-flow);
-  align-content: start;
-  max-inline-size: var(--width-text);
+  align-content: end;
+  justify-items: start;
+  max-inline-size: min(100%, 44rem);
+
+  margin-block: calc(var(--header-height) + var(--space-md)) var(--space-lg);
+}
+
+.chapter__eyebrow {
+  color: var(--c-accent-light);
+}
+
+.chapter__eyebrow::before {
+  background-color: var(--c-accent-light);
 }
 
 .chapter__title {
-  font-size: var(--step-5);
+  font-size: var(--step-hero);
   line-height: var(--lh-tight);
   letter-spacing: var(--ls-display);
-  max-inline-size: 16ch;
+  color: var(--text-on-media);
+  /* `min(100%, …)` not a bare `ch`: a long property name must wrap inside the
+     rail rather than be clipped by a box narrower than the word. This is the
+     round 1 hero bug, fixed. */
+  max-inline-size: min(100%, 20ch);
 }
 
 .chapter__tagline {
-  color: var(--c-muted);
+  color: var(--text-on-media-secondary);
   font-size: var(--step-1);
   line-height: var(--lh-snug);
-  max-inline-size: 28ch;
+  max-inline-size: min(100%, 34ch);
 }
 
 .chapter__headline {
   font-size: var(--step-3);
   line-height: var(--lh-snug);
-  max-inline-size: 18ch;
+  color: var(--text-on-media);
+  max-inline-size: min(100%, 20ch);
 }
 
 .chapter__body {
-  color: var(--c-muted);
-  font-size: var(--step-1);
+  color: var(--text-on-media-secondary);
+  font-size: var(--step-0);
   line-height: var(--lh-loose);
-  max-inline-size: 40ch;
+  max-inline-size: min(100%, 46ch);
 }
 
 /* A brass hairline anchoring the copy block — the accent's only other job. */
@@ -414,46 +573,30 @@ body.is-scrolled .site-header {
   inline-size: 3.5rem;
   block-size: 2px;
   margin-block-start: var(--space-2xs);
-  background-color: var(--c-accent);
+  background-color: var(--c-accent-light);
 }
 
 /* -----------------------------------------------------------------------------
    5. Hero chapter
+   Same scene, one size up, and it carries the page's only <h1>.
    -------------------------------------------------------------------------- */
 
-.chapter.chapter--hero {
-  display: block;
-  padding-block: 0 var(--space-section);
-  padding-inline: 0;
+.chapter--hero .chapter__copy {
+  max-inline-size: min(100%, 48rem);
+  gap: var(--space-sm);
 }
 
-.chapter.chapter--hero .chapter__media {
-  aspect-ratio: 4 / 5;
-  max-block-size: 86svh;
-  border-radius: 0;
-  box-shadow: none;
+.chapter--hero .chapter__tagline {
+  font-size: var(--step-1);
+  color: var(--text-on-media);
 }
 
-.chapter.chapter--hero .chapter__copy {
-  position: relative;
-  z-index: 2;
-  margin-inline: var(--space-gutter);
-  margin-block-start: calc(var(--space-xl) * -1);
-  max-inline-size: 46rem;
-  padding: var(--space-lg);
-  background-color: var(--c-paper);
-  border-block-start: 2px solid var(--c-accent);
-  box-shadow: var(--shadow-lg);
-}
-
-.chapter.chapter--hero .chapter__headline {
+/* Below the name and tagline the hero headline is a supporting line, not a
+   second title — so it steps down rather than competing. */
+.chapter--hero .chapter__headline {
+  margin-block-start: var(--space-sm);
   font-size: var(--step-2);
-  color: var(--c-ink);
-  max-inline-size: 24ch;
-}
-
-.chapter.chapter--hero .chapter__copy::after {
-  display: none;
+  max-inline-size: min(100%, 26ch);
 }
 
 /* -----------------------------------------------------------------------------
@@ -532,13 +675,20 @@ body.is-scrolled .site-header {
   display: grid;
   gap: var(--space-lg);
   align-items: start;
+  justify-items: stretch;
 }
 
+/* The drawing is the point of this section, so it is sized to be seen whole:
+   a square that is never taller than 62svh and never wider than its column.
+   Round 1 let it run to 34rem regardless of viewport height, which pushed the
+   bottom of the plan below the fold. `object-fit: contain` then guarantees the
+   whole 800x800 artboard is inside the frame, never cropped. */
 .plans__panels img {
-  inline-size: 100%;
-  max-inline-size: 34rem;
+  inline-size: min(100%, 34rem, 62svh);
+  block-size: auto;
   aspect-ratio: 1 / 1;
   object-fit: contain;
+  justify-self: start;
   padding: var(--space-md);
   background-color: var(--c-paper);
   border: var(--hairline) solid var(--c-rule);
@@ -900,22 +1050,27 @@ body.is-scrolled .site-header {
    Hidden by default; revealed only once Motion puts .is-scrolled on <body>.
    -------------------------------------------------------------------------- */
 
+/* Round 1 stretched this edge to edge on a phone, so it read as a bar sitting
+   on top of the page rather than as an affordance. It is now a compact pill in
+   the bottom corner: still fixed, still always one tap away, but it covers a
+   corner instead of a line of copy. Height stays at the 44px tap-target floor. */
 .sticky-cta {
   position: fixed;
   z-index: 90;
   inset-block-end: max(var(--space-md), env(safe-area-inset-bottom, 0px));
-  inset-inline: var(--space-md);
+  inset-inline: auto max(var(--space-md), env(safe-area-inset-right, 0px));
   display: flex;
   align-items: center;
   justify-content: center;
-  min-block-size: 3rem;
-  padding: 0.85rem var(--space-lg);
+  min-block-size: 2.75rem;
+  max-inline-size: calc(100vw - var(--space-xl));
+  padding: 0.6rem var(--space-md);
   background-color: var(--c-ink);
   color: var(--c-paper-invert);
   border: var(--hairline) solid var(--c-accent-a30);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-cta);
-  font-size: var(--step--1);
+  font-size: var(--step--2);
   font-weight: var(--fw-medium);
   letter-spacing: var(--ls-caps);
   text-transform: uppercase;
@@ -1117,21 +1272,8 @@ body.is-scrolled .sticky-cta {
    11. Responsive — mobile-first; these are the only breakpoints
    -------------------------------------------------------------------------- */
 
-/* Large phone / small tablet: give the media a little more air. */
+/* Large phone / small tablet. */
 @media (min-width: 34rem) {
-  .chapter__media {
-    aspect-ratio: 3 / 2;
-  }
-
-  .chapter.chapter--hero .chapter__media {
-    aspect-ratio: 3 / 2;
-  }
-
-  .chapter.chapter--hero .chapter__copy {
-    padding: var(--space-xl);
-    margin-block-start: calc(var(--space-2xl) * -1);
-  }
-
   .tour__form {
     padding: var(--space-xl);
   }
@@ -1144,9 +1286,20 @@ body.is-scrolled .sticky-cta {
 /* Tablet: floor-plan panels go side by side. */
 @media (min-width: 48rem) {
   .plans__panels > * {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    /* Drawing left, facts right, both hung from the same top line. Round 1
+       centred the facts column against a very tall drawing, which is what made
+       it look like it was floating on its own. */
+    grid-template-columns: minmax(0, 1.15fr) minmax(15rem, 0.85fr);
     gap: var(--space-xl);
-    align-items: center;
+    align-items: start;
+  }
+
+  .plans__facts {
+    padding: var(--space-lg);
+    background-color: var(--c-paper);
+    border: var(--hairline) solid var(--c-rule);
+    border-block-start: 2px solid var(--c-accent);
+    border-radius: var(--radius-md);
   }
 
   .tour__form {
@@ -1159,59 +1312,24 @@ body.is-scrolled .sticky-cta {
   }
 }
 
-/* Desktop: the chapters become an alternating editorial spread, with the copy
-   card overlapping the image. */
+/* Desktop. The scene stays full-bleed; what changes is how much of the frame
+   the copy is allowed to take, and — every second chapter — which side of the
+   frame it hangs off. That alternation is the only thing keeping eight
+   full-screen scenes from reading as a slideshow. */
 @media (min-width: 62rem) {
-  .chapter {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--space-gutter);
-    align-items: center;
-    padding-inline: max(var(--space-gutter), calc((100% - var(--width-wide)) / 2));
-  }
-
-  .chapter__media {
-    grid-row: 1;
-    grid-column: 1 / span 7;
-    aspect-ratio: 4 / 3;
-    max-block-size: 78svh;
-  }
-
   .chapter__copy {
-    grid-row: 1;
-    grid-column: 7 / -1;
-    z-index: 2;
-    padding: var(--space-xl);
-    background-color: var(--c-paper);
-    border-block-start: 2px solid var(--c-accent);
-    box-shadow: var(--shadow-lg);
-    max-inline-size: none;
-  }
-
-  .chapter__copy::after {
-    display: none;
-  }
-
-  /* Mirror every second chapter. */
-  .chapter:nth-of-type(even) .chapter__media {
-    grid-column: 6 / -1;
+    max-inline-size: min(100%, 38rem);
+    padding-block-end: var(--space-3xl);
   }
 
   .chapter:nth-of-type(even) .chapter__copy {
-    grid-column: 1 / span 6;
+    justify-self: end;
+    justify-items: start;
+    text-align: start;
   }
 
-  /* Hero keeps its full-bleed image with the copy card hanging below it. */
-  .chapter.chapter--hero .chapter__media {
-    aspect-ratio: 16 / 9;
-    min-block-size: 82svh;
-    max-block-size: 92svh;
-  }
-
-  .chapter.chapter--hero .chapter__copy {
-    margin-inline: max(var(--space-gutter), calc((100% - var(--width-page)) / 2));
-    margin-block-start: calc(var(--space-3xl) * -1);
-    padding: var(--space-2xl);
-    max-inline-size: 50rem;
+  .chapter--hero .chapter__copy {
+    max-inline-size: min(100%, 46rem);
   }
 
   .plans__intro,
@@ -1231,27 +1349,10 @@ body.is-scrolled .sticky-cta {
   .sticky-cta {
     inset-inline: auto var(--space-xl);
     inset-block-end: var(--space-xl);
-    min-inline-size: 12rem;
   }
 
   .site-footer {
     grid-template-rows: auto;
-  }
-}
-
-/* Wide desktop: cap the measure so nothing stretches at 1440px+. */
-@media (min-width: 90rem) {
-  .chapter__copy {
-    max-inline-size: 34rem;
-    justify-self: start;
-  }
-
-  .chapter:nth-of-type(even) .chapter__copy {
-    justify-self: end;
-  }
-
-  .chapter.chapter--hero .chapter__copy {
-    max-inline-size: 48rem;
   }
 }
 
