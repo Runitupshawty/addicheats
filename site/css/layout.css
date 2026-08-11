@@ -1,0 +1,2106 @@
+/* =============================================================================
+   layout.css — the page shell
+   Owner: Structure.
+
+   Scope boundary: this file owns BOX MODEL, TYPE, COLOUR and RESPONSIVE
+   BEHAVIOUR. It deliberately declares no chapter transitions, transforms,
+   scroll-linked animation, or anything keyed off --p / .is-active / .is-seen —
+   Motion owns all of that in css/chapters.css, which loads after this file and
+   therefore wins. The one animated thing here is the sticky CTA reveal, which
+   the contract assigns to Structure.
+
+   Order
+     1.  Page base
+     2.  Shared primitives (skip link, buttons, section headings, noscript)
+     3.  Site header
+     4.  Journey + generic chapter
+     5.  Hero chapter
+     6.  Services
+     7.  Why owners choose us
+     8.  Pricing
+     9.  Quote + form controls
+     10. Sticky CTA
+     11. Site footer
+     12. Focus, selection, reduced motion, print
+     13. Responsive
+     14. INTEGRATION NOTES
+
+   v3 note: this is a property MANAGEMENT COMPANY site, not a leasing site.
+   The floor-plan (`.plans__*`) and tour-form (`.tour__*`) rules are gone —
+   nothing on this page is for rent, so there is nothing to plan or tour. The
+   walkthrough sections 4 and 5 are untouched: same geometry, same handoff to
+   Motion, only the argument the copy makes has changed.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   1. Page base
+   -------------------------------------------------------------------------- */
+
+body {
+  background-color: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  /* Space for the fixed sticky CTA on small screens so it never covers the
+     last line of the footer. */
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--c-accent-a30);
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: from-font;
+}
+
+a:hover {
+  text-decoration-color: var(--c-accent);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Centred content rail used by every full-bleed section. Works for markup that
+   JavaScript injects later, because it targets direct children generically. */
+.services,
+.why,
+.pricing,
+.quote,
+.site-footer {
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--space-gutter), 1fr)
+    [content-start] minmax(0, var(--width-page)) [content-end]
+    minmax(var(--space-gutter), 1fr) [full-end];
+}
+
+.services > *,
+.why > *,
+.pricing > *,
+.quote > *,
+.site-footer > * {
+  grid-column: content;
+}
+
+/* Every post-walkthrough section clears the fixed header when it is the
+   anchor target. The header CTA and the sticky CTA both aim at #quote. */
+.services,
+.why,
+.pricing,
+.quote {
+  scroll-margin-block-start: var(--header-height);
+}
+
+/* -----------------------------------------------------------------------------
+   2. Shared primitives
+   -------------------------------------------------------------------------- */
+
+.skip-link {
+  position: fixed;
+  z-index: 200;
+  inset-block-start: var(--space-2xs);
+  inset-inline-start: var(--space-2xs);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--c-ink);
+  color: var(--c-paper-invert);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-160%);
+}
+
+.skip-link:focus-visible,
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+main:focus {
+  outline: none;
+}
+
+/* --- buttons ---------------------------------------------------------------
+   Class-based for markup I author; element-based fallbacks further down catch
+   the button js/site.js injects into the quote form. */
+
+.button,
+.quote__form button[type="submit"],
+.site-header__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  min-height: 2.75rem;
+  padding: 0.75rem var(--space-md);
+  border: var(--hairline) solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--step--1);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--dur-base) var(--ease-out),
+              color var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
+}
+
+.button--primary,
+.quote__form button[type="submit"] {
+  background-color: var(--c-ink);
+  color: var(--c-paper-invert);
+  border-color: var(--c-ink);
+  padding-inline: var(--space-lg);
+}
+
+.button--primary:hover,
+.quote__form button[type="submit"]:hover {
+  background-color: var(--c-accent-hover);
+  border-color: var(--c-accent-hover);
+  color: var(--c-paper);
+}
+
+.button--ghost {
+  background-color: transparent;
+  color: var(--c-accent-deep);
+  border-color: var(--c-accent-a30);
+}
+
+.button--ghost:hover {
+  border-color: var(--c-accent);
+  background-color: var(--c-accent-a12);
+}
+
+/* --- section headings (services, why, pricing, quote) ---------------------- */
+
+.section__eyebrow,
+.chapter__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+  color: var(--c-accent-deep);
+  font-size: var(--step--1);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.section__eyebrow::before,
+.chapter__eyebrow::before {
+  content: "";
+  flex: 0 0 auto;
+  inline-size: clamp(1.5rem, 3vw, 2.75rem);
+  block-size: 1px;
+  background-color: var(--c-accent);
+}
+
+.section__title {
+  margin-block-start: var(--space-md);
+  font-size: var(--step-3);
+  line-height: var(--lh-snug);
+  max-inline-size: 20ch;
+}
+
+.section__lede {
+  margin-block-start: var(--space-md);
+  max-inline-size: var(--width-text);
+  color: var(--c-muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+}
+
+/* The intro block of each post-walkthrough section. Deliberately generous:
+   this is a pitch to owners, and the whitespace above a section title is
+   doing as much work as the title. */
+.services__intro,
+.why__intro,
+.pricing__intro,
+.quote__intro {
+  padding-block-end: var(--space-xl);
+}
+
+/* --- noscript notices ------------------------------------------------------ */
+
+.noscript-note {
+  margin-inline: auto;
+  margin-block: var(--space-lg);
+  max-inline-size: var(--width-text);
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--c-card);
+  border: var(--hairline) solid var(--c-rule);
+  border-inline-start: 3px solid var(--c-accent);
+  border-radius: var(--radius-sm);
+  color: var(--c-ink);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+}
+
+.noscript-note > * + * {
+  margin-block-start: var(--space-sm);
+}
+
+.noscript-note__title {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-snug);
+}
+
+.noscript-note code {
+  font-family: ui-monospace, "DejaVu Sans Mono", monospace;
+  font-size: 0.9em;
+  background-color: var(--c-paper);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-xs);
+}
+
+.noscript-note__contact {
+  display: grid;
+  gap: var(--space-sm);
+  list-style: none;
+  padding: 0;
+  justify-items: start;
+}
+
+.noscript-note__meta {
+  color: var(--c-muted);
+}
+
+.noscript-note--footer {
+  background-color: transparent;
+  border-color: var(--c-rule-invert);
+  border-inline-start-color: var(--c-accent);
+  color: var(--text-on-dark);
+}
+
+.noscript-note--footer code {
+  background-color: var(--c-ink-soft);
+}
+
+/* -----------------------------------------------------------------------------
+   3. Site header
+   -------------------------------------------------------------------------- */
+
+.site-header {
+  position: fixed;
+  z-index: 100;
+  inset-block-start: 0;
+  inset-inline: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-block-size: var(--header-height);
+  padding-inline: var(--space-gutter);
+  padding-block: var(--space-2xs);
+  background-color: var(--c-paper-a92);
+  border-block-end: var(--hairline) solid transparent;
+  transition: background-color var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .site-header {
+    background-color: rgb(251 248 243 / 0.72);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+  }
+}
+
+/* Motion adds .is-scrolled to <body> past the first viewport. */
+body.is-scrolled .site-header {
+  border-block-end-color: var(--c-rule);
+  box-shadow: var(--shadow-sm);
+}
+
+.site-header__name {
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--c-ink);
+  /* Keeps a long placeholder name from shoving the CTA off a 390px screen. */
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-header__cta {
+  flex: 0 0 auto;
+  min-height: 2.25rem;
+  padding: 0.5rem var(--space-md);
+  background-color: transparent;
+  color: var(--c-accent-deep);
+  border-color: var(--c-accent-a30);
+}
+
+.site-header__cta:hover {
+  background-color: var(--c-accent-a12);
+  border-color: var(--c-accent);
+}
+
+/* -----------------------------------------------------------------------------
+   4. Journey + the chapter as a full-bleed scene
+   -----------------------------------------------------------------------------
+
+   ROUND 2 REBUILD. Round 1 drew each chapter as a small framed card with the
+   copy beside it, which read as a product page rather than a walk-through. A
+   chapter is now one scene: the media fills the whole 100svh section, edge to
+   edge, and the copy sits over it, bottom-anchored inside the content rail.
+
+   HOW THE MEDIA FILLS. `.chapter` is the containing block (position: relative,
+   zero padding — all the padding lives on `.chapter__copy` instead, so nothing
+   insets the picture). `.chapter__media` is taken out of flow with
+   `position: absolute; inset: 0`, so the chapter's height is set purely by the
+   copy against `min-block-size: 100svh`, and the media always matches it —
+   however tall the copy grows on a narrow screen.
+
+   That one declaration is written as `.journey .chapter__media` rather than
+   `.chapter__media`: css/chapters.css restates `position: relative` on the same
+   class, and it loads last. Two classes beats one, so this holds by specificity
+   instead of by load order. See INTEGRATION NOTE 4.
+   -------------------------------------------------------------------------- */
+
+.journey {
+  display: block;
+  /* Guards the page against horizontal scrollbars if Motion translates media
+     beyond the chapter box. `clip` (not `hidden`) so position:sticky still
+     resolves against the viewport. */
+  overflow-x: clip;
+}
+
+.journey > noscript .noscript-note {
+  margin-block-start: calc(var(--header-height) + var(--space-lg));
+}
+
+.chapter {
+  position: relative;
+  /* Keeps every z-index below strictly local to the chapter. */
+  isolation: isolate;
+
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--space-gutter), 1fr)
+    [content-start] minmax(0, var(--width-page)) [content-end]
+    minmax(var(--space-gutter), 1fr) [full-end];
+  /* The copy is the only in-flow child, so `end` is what bottom-anchors it. */
+  align-content: end;
+
+  min-block-size: var(--chapter-min-height);
+  /* Deliberately zero. See the note above — padding here would inset the
+     full-bleed media. The copy carries its own. */
+  padding: 0;
+
+  background-color: var(--c-ink);
+  color: var(--text-on-media);
+  scroll-margin-block-start: 0;
+}
+
+/* --- the still behind everything --------------------------------------------
+   The poster frame, painted on the CHAPTER, underneath the media frame. It is
+   the floor for "never a black box": it is in the stylesheet, so it is there
+   before any script runs, if no script ever runs, if the clip 404s, if the
+   codec is unsupported, and if the decoder gives up mid-scrub.
+
+   js/scroll.js also publishes each poster to `--chapter-poster` for
+   chapters.css to paint on `.chapter__media`. That is the same image at the
+   same URL, so the two cost one download and agree with each other — this
+   simply does not depend on it. It is currently also the only one of the two
+   that works; see INTEGRATION NOTE 8.
+
+   Paths are relative to this file, hence the `../`. They are the only asset
+   filenames in the stylesheet, and they match the `poster` attributes in
+   index.html one for one.
+   -------------------------------------------------------------------------- */
+
+.chapter[data-art="exterior-aerial"],
+.chapter[data-art="exterior-street"],
+.chapter[data-art="living"],
+.chapter[data-art="kitchen"] {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.chapter[data-art="exterior-aerial"] {
+  background-image: url("../assets/video/exterior-aerial-poster.jpg");
+}
+
+.chapter[data-art="exterior-street"] {
+  background-image: url("../assets/video/exterior-street-poster.jpg");
+}
+
+.chapter[data-art="living"] {
+  background-image: url("../assets/video/living-poster.jpg");
+}
+
+.chapter[data-art="kitchen"] {
+  background-image: url("../assets/video/kitchen-poster.jpg");
+}
+
+/* --- the picture ----------------------------------------------------------- */
+
+.journey .chapter__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  /* Round 1's card treatment, explicitly undone. */
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
+  /* Transparent, not the round 1 card fill: the chapter behind this is
+     carrying the poster still, and an opaque frame would hide it. */
+  background-color: transparent;
+}
+
+.chapter__media > img,
+.chapter__media > video {
+  inline-size: 100%;
+  block-size: 100%;
+  /* Beats the `height: auto` in the tokens reset for the video element. */
+  min-block-size: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* --- the veil is NOT here ---------------------------------------------------
+   Deliberately. Copy over a photograph needs the photograph darkened where the
+   words are, but that treatment belongs to css/chapters.css, which now ships
+   it always-on: a veil on `.chapter__media::after` plus a feathered panel
+   painted as the background of `.chapter__copy`, both measured against
+   rendered pixels. Adding a second veil here does not make the page safer, it
+   makes it black — which is exactly what happened the first time this section
+   was written, and why it is now a comment.
+
+   What this file guarantees instead is the part Motion cannot see: that the
+   copy is placed inside the band the veil is weighted for, and that the text
+   colours below hold up on their own if chapters.css never loads. Contrast was
+   verified by screenshotting the real page with the text set to transparent
+   and sampling the lightest pixel inside every text run, at 390 / 768 / 1440,
+   with a deliberately long property name. See INTEGRATION NOTE 7.
+   -------------------------------------------------------------------------- */
+
+/* --- honesty label ----------------------------------------------------------
+   On the four chapters running real footage. Structure owns where it goes;
+   chapters.css owns what it looks like, and matches it on `[data-media-note]`
+   / `.chapter__note`, so the markup carries both. Everything below is position
+   only, plus a self-sufficient fallback skin for the no-chapters.css case.
+
+   Placed top-right of the frame and offset by the header height so it never
+   ends up underneath the fixed header, and never collides with the copy, which
+   is bottom-anchored. It reads as a photo credit, which is what it is.
+   -------------------------------------------------------------------------- */
+
+.chapter__note {
+  position: absolute;
+  z-index: 3;
+  inset-block-start: calc(var(--header-height) + var(--space-2xs));
+  inset-inline-end: var(--space-gutter);
+  /* Absolute positioning turns chapters.css's `inline-size: inline-block` into
+     a block, which would stretch the chip to its max width and leave the text
+     ranged right inside a wide empty slab. Shrink-to-fit restores the chip. */
+  inline-size: fit-content;
+  max-inline-size: min(26rem, calc(100% - var(--space-gutter) * 2));
+  padding: 0.4rem 0.7rem;
+  background-color: rgb(var(--c-ink-rgb) / 0.78);
+  border-radius: var(--radius-sm);
+  color: var(--text-on-media);
+  font-size: var(--step--1);
+  line-height: 1.35;
+  text-align: end;
+  text-wrap: balance;
+}
+
+/* --- the copy ---------------------------------------------------------------
+   Bottom-left of the content rail, capped at a proper reading measure.
+
+   Spacing is set with MARGIN, not padding. chapters.css paints the copy panel
+   as a background on this element and uses its `padding` shorthand to give the
+   panel its bleed, so any padding declared here is overwritten. Margin is
+   untouched by that and does the same job from outside the panel: the block
+   start margin is a guard that only bites when the copy grows tall enough to
+   reach the fixed header, and the block end margin lifts it off the bottom
+   edge of the screen.
+   -------------------------------------------------------------------------- */
+
+.chapter__copy {
+  grid-column: content;
+  position: relative;
+  z-index: 2;
+
+  display: grid;
+  gap: var(--space-flow);
+  align-content: end;
+  justify-items: start;
+  max-inline-size: min(100%, 44rem);
+
+  /* The block end value also has to clear the bleed on chapters.css's copy
+     panel, which is a `::before` inset negatively past this box — too small a
+     margin and the panel laps over the top of the next chapter. */
+  margin-block: calc(var(--header-height) + var(--space-md)) var(--space-xl);
+}
+
+.chapter__eyebrow {
+  color: var(--c-accent-light);
+}
+
+.chapter__eyebrow::before {
+  background-color: var(--c-accent-light);
+}
+
+.chapter__title {
+  font-size: var(--step-hero);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+  color: var(--text-on-media);
+  /* `min(100%, …)` not a bare `ch`: a long property name must wrap inside the
+     rail rather than be clipped by a box narrower than the word. This is the
+     round 1 hero bug, fixed. */
+  max-inline-size: min(100%, 20ch);
+}
+
+.chapter__tagline {
+  color: var(--text-on-media-secondary);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+  max-inline-size: min(100%, 34ch);
+}
+
+.chapter__headline {
+  font-size: var(--step-3);
+  line-height: var(--lh-snug);
+  color: var(--text-on-media);
+  max-inline-size: min(100%, 20ch);
+}
+
+.chapter__body {
+  color: var(--text-on-media-secondary);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+  max-inline-size: min(100%, 46ch);
+}
+
+/* A brass hairline anchoring the copy block — the accent's only other job. */
+.chapter__copy::after {
+  content: "";
+  inline-size: 3.5rem;
+  block-size: 2px;
+  margin-block-start: var(--space-2xs);
+  background-color: var(--c-accent-light);
+}
+
+/* -----------------------------------------------------------------------------
+   5. Hero chapter
+   Same scene, one size up, and it carries the page's only <h1>.
+   -------------------------------------------------------------------------- */
+
+.chapter--hero .chapter__copy {
+  max-inline-size: min(100%, 48rem);
+  gap: var(--space-sm);
+}
+
+.chapter--hero .chapter__tagline {
+  font-size: var(--step-1);
+  color: var(--text-on-media);
+}
+
+/* Below the name and tagline the hero headline is a supporting line, not a
+   second title — so it steps down rather than competing. */
+.chapter--hero .chapter__headline {
+  margin-block-start: var(--space-sm);
+  font-size: var(--step-2);
+  max-inline-size: min(100%, 26ch);
+}
+
+/* -----------------------------------------------------------------------------
+   6. Services
+   -----------------------------------------------------------------------------
+
+   Five to seven services, injected into [data-services] by js/site.js. Drawn
+   as an editorial index rather than a set of cards: a hairline over each entry,
+   a brass ordinal, then title / body / deliverables. Boxes would have made this
+   read like every other management company's template page; rules and numbers
+   read like a table of contents, which is what a list of services actually is.
+
+   The ordinal is a CSS counter on the grid, so it survives whatever markup
+   site.js emits and renumbers itself if a service is added or removed.
+   -------------------------------------------------------------------------- */
+
+.services {
+  padding-block: var(--space-section);
+  background-color: var(--surface-page);
+}
+
+.services__grid {
+  display: grid;
+  gap: var(--space-xl) var(--space-lg);
+  counter-reset: service;
+}
+
+.services__grid:empty {
+  display: none;
+}
+
+/* Generic: whatever element site.js uses for a service. */
+.services__grid > * {
+  display: grid;
+  gap: var(--space-2xs);
+  align-content: start;
+  justify-items: start;
+  min-inline-size: 0;
+  counter-increment: service;
+  padding-block-start: var(--space-md);
+  border-block-start: var(--hairline) solid var(--c-rule);
+}
+
+.services__grid > *::before {
+  content: counter(service, decimal-leading-zero);
+  color: var(--c-accent-deep);
+  font-family: var(--font-display);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-caps);
+  line-height: 1;
+}
+
+/* NB: site.js calls the ARTICLE `.services__item` and the list row
+   `.services__list-item` — the opposite way round to the obvious guess. The
+   dash rule below is therefore scoped to `.services__list-item`, never to
+   `.services__item`, or the brass dash would replace the ordinal on the card
+   itself (a `::before` can only carry one `content`).
+
+   No measure cap at this width on purpose: one column at 390px is already
+   narrower than the cap would be, and capping twice makes a two-word title
+   wrap for no reason. The cap arrives with the multi-column grid at 48rem. */
+.services__grid h3,
+.services__grid .services__name {
+  margin-block-start: var(--space-3xs);
+  color: var(--c-ink);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+}
+
+.services__grid p,
+.services__grid .services__body {
+  color: var(--c-muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+  max-inline-size: 42ch;
+}
+
+/* The concrete deliverables under each service. */
+.services__grid ul,
+.services__grid .services__list {
+  display: grid;
+  gap: var(--space-3xs);
+  margin-block-start: var(--space-2xs);
+  padding: 0;
+  list-style: none;
+}
+
+.services__grid li,
+.services__grid .services__list-item {
+  position: relative;
+  padding-inline-start: 1.35rem;
+  color: var(--c-ink);
+  font-size: var(--step--1);
+  line-height: 1.55;
+}
+
+/* A brass dash instead of a bullet — the accent's whole job in this section. */
+.services__grid li::before,
+.services__grid .services__list-item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.7em;
+  inset-inline-start: 0;
+  inline-size: 0.6rem;
+  block-size: 1px;
+  background-color: var(--c-accent);
+}
+
+/* -----------------------------------------------------------------------------
+   7. Why owners choose us
+   -----------------------------------------------------------------------------
+
+   The one dark band between the walkthrough and the commercial sections. It
+   exists to change the temperature of the page: eight scenes, a bright index
+   of services, then a short, quiet, authoritative statement — then pricing.
+
+   Three or four entries from [data-why], each optionally carrying a bracketed
+   stat. The stat is the only large brass thing on the page after the hero, so
+   it is capped by --step-stat (tokens §3) rather than a raw display step: the
+   real values are unknown and may be phrases, not numbers.
+   -------------------------------------------------------------------------- */
+
+.why {
+  padding-block: var(--space-section);
+  background-color: var(--surface-dark);
+  color: var(--text-on-dark);
+}
+
+.why .section__eyebrow {
+  color: var(--c-accent-light);
+}
+
+.why .section__eyebrow::before {
+  background-color: var(--c-accent-light);
+}
+
+.why .section__title {
+  color: var(--text-on-dark);
+}
+
+.why .section__lede {
+  color: var(--text-on-dark-secondary);
+}
+
+.why__grid {
+  display: grid;
+  gap: var(--space-xl) var(--space-lg);
+}
+
+.why__grid:empty {
+  display: none;
+}
+
+.why__grid > * {
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+  justify-items: start;
+  min-inline-size: 0;
+  padding-block-start: var(--space-md);
+  border-block-start: var(--hairline) solid var(--c-rule-invert);
+}
+
+/* The stat, however site.js marks it up. Class first, then the plausible
+   element shapes — a <strong>, a <b>, or a definition list. */
+.why__grid .why__stat,
+.why__grid strong,
+.why__grid b,
+.why__grid dt {
+  color: var(--c-accent-light);
+  font-family: var(--font-display);
+  font-size: var(--step-stat);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+  text-wrap: balance;
+}
+
+/* Measure caps land with the multi-column grid at 48rem, not here — a single
+   350px column is already the constraint, and a second one only forces
+   "[1 point of contact]" onto two lines with half the row still empty. */
+.why__grid h3,
+.why__grid .why__name {
+  margin-block-start: var(--space-3xs);
+  color: var(--text-on-dark);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+}
+
+.why__grid p,
+.why__grid dd,
+.why__grid .why__body {
+  margin: 0;
+  color: var(--text-on-dark-secondary);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+  max-inline-size: 40ch;
+}
+
+.why__grid a {
+  color: var(--text-on-dark);
+  text-decoration-color: var(--c-accent);
+}
+
+/* -----------------------------------------------------------------------------
+   8. Pricing
+   -----------------------------------------------------------------------------
+
+   Three parts, three hooks: the fee model in a sentence or two, the tiers, and
+   the small print. Exactly one tier is featured, and it has to read as featured
+   with the colour taken away — so the distinction is carried by border WEIGHT
+   (a 4px cap rule against 2px), ELEVATION (a real shadow against none) and SIZE
+   (it grows past its neighbours at >= 62rem). Brass is confirmation, never the
+   signal on its own.
+   -------------------------------------------------------------------------- */
+
+.pricing {
+  padding-block: var(--space-section);
+  background-color: var(--c-card);
+  border-block: var(--hairline) solid var(--c-rule);
+}
+
+/* How fees work. Set as a standfirst — serif, one step up, ink rather than
+   muted — because it is the answer to the first question an owner asks. The
+   leading is looser than a heading's: the real copy runs to a paragraph, not
+   a line, and --lh-snug at this size closes it up into a slab. At >= 62rem it
+   moves beside the section title (§13) instead of under it. */
+.pricing__model {
+  max-inline-size: 54ch;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: 1.42;
+}
+
+.pricing__model:empty {
+  display: none;
+}
+
+.pricing__model > * + * {
+  margin-block-start: var(--space-sm);
+}
+
+.pricing__tiers {
+  display: grid;
+  gap: var(--space-md);
+  align-items: stretch;
+  margin-block-start: var(--space-2xl);
+}
+
+.pricing__tiers:empty {
+  display: none;
+}
+
+/* Every tier reserves the same strip above its name — one badge tall — so the
+   three names and the three rates share a baseline whether or not a tier is
+   flagged. The badge is then placed INSIDE that reserved strip, so it never
+   hangs off the card edge and the card never needs clipping. Both the padding
+   and the badge's offset are driven by --tier-pad-*, which is all the
+   featured tier has to change at >= 62rem to grow. */
+.pricing__tiers > * {
+  --tier-pad-i: var(--space-lg);
+  --tier-pad-b: var(--space-lg);
+  --tier-badge-h: 1.9rem;
+
+  position: relative;
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+  justify-items: start;
+  min-inline-size: 0;
+  padding: calc(var(--tier-pad-b) + var(--tier-badge-h))
+           var(--tier-pad-i)
+           var(--tier-pad-b);
+  background-color: var(--c-paper);
+  border: var(--hairline) solid var(--c-rule);
+  border-block-start: 2px solid var(--c-rule);
+  border-radius: var(--radius-md);
+}
+
+/* The featured tier. `[data-featured]` is matched only in its true forms so a
+   `data-featured="false"` sibling cannot accidentally claim the treatment. */
+.pricing__tiers > .pricing__tier--featured,
+.pricing__tiers > .is-featured,
+.pricing__tiers > [data-featured="true"],
+.pricing__tiers > [data-featured=""] {
+  border-color: var(--c-accent-a30);
+  border-block-start: 4px solid var(--c-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.pricing__tiers h3,
+.pricing__tiers .pricing__tier-name,
+.pricing__tiers .pricing__name {
+  color: var(--c-ink);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+}
+
+/* site.js builds the rate as ONE <p class="pricing__rate"> holding
+   <span class="pricing__rate-value"> + a text node + <span
+   class="pricing__rate-note">. So the display treatment goes on the
+   paragraph and the note takes itself back out of it on the line below —
+   which also covers the shape where the note is a sibling <p>. */
+.pricing__tiers .pricing__rate,
+.pricing__tiers .pricing__rate-value {
+  margin: 0;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+}
+
+.pricing__tiers .pricing__rate-note {
+  display: block;
+  margin-block-start: var(--space-3xs);
+  color: var(--c-muted);
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-body);
+  line-height: 1.45;
+}
+
+.pricing__tiers p,
+.pricing__tiers .pricing__summary {
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+  max-inline-size: 34ch;
+}
+
+/* The featured tier's label — `tiers[].badge` in company.js, so the wording is
+   editable. Brass on a brass tint at the deeper step, so a --step--2 label
+   still clears 4.5:1.
+
+   Taken out of flow and dropped into the strip reserved above every tier's
+   name. In flow it pushed the featured tier's name and rate a row lower than
+   its neighbours', so the three rates — the one thing an owner is here to
+   compare — no longer shared a baseline. Out of flow but INSIDE the padding
+   box, they do, and nothing overhangs the card.
+
+   It is held to exactly one line: the reserved strip is a fixed height, so a
+   label that wrapped would grow into the tier name. An over-long label is
+   ellipsised rather than allowed to collide — and it is one editable string
+   in company.js, so the fix for a truncated badge is to shorten it. */
+.pricing__tiers .pricing__badge {
+  position: absolute;
+  inset-block-start: var(--tier-pad-b);
+  inset-inline-start: var(--tier-pad-i);
+  display: inline-flex;
+  align-items: center;
+  block-size: var(--tier-badge-h);
+  max-inline-size: calc(100% - var(--tier-pad-i) * 2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0.3rem 0.8rem;
+  /* Opaque, built from tokens: the 12% brass wash composited over paper by a
+     flat gradient rather than left translucent. Straddling the card edge, a
+     translucent chip would be two different colours above and below the rule. */
+  background-color: var(--c-paper);
+  background-image: linear-gradient(var(--c-accent-a12), var(--c-accent-a12));
+  border: var(--hairline) solid var(--c-accent-a30);
+  border-radius: var(--radius-pill);
+  color: var(--c-accent-deeper);
+  font-size: var(--step--2);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.pricing__tiers ul,
+.pricing__tiers .pricing__includes {
+  display: grid;
+  gap: var(--space-3xs);
+  inline-size: 100%;
+  margin-block-start: var(--space-2xs);
+  padding-block-start: var(--space-md);
+  border-block-start: var(--hairline) solid var(--c-rule);
+  padding-inline: 0;
+  list-style: none;
+}
+
+.pricing__tiers li,
+.pricing__tiers .pricing__includes-item {
+  position: relative;
+  padding-inline-start: 1.35rem;
+  color: var(--c-ink);
+  font-size: var(--step--1);
+  line-height: 1.55;
+}
+
+.pricing__tiers li::before,
+.pricing__tiers .pricing__includes-item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.7em;
+  inset-inline-start: 0;
+  inline-size: 0.6rem;
+  block-size: 1px;
+  background-color: var(--c-accent);
+}
+
+/* --- the small print -------------------------------------------------------
+   Leasing fee, setup fee, notice period. Small, but it is the part an owner
+   reads twice, so it gets a real measure and a rule of its own rather than
+   being dropped at the bottom as a run-on. */
+
+.pricing__notes {
+  margin-block-start: var(--space-2xl);
+  padding-block-start: var(--space-lg);
+  border-block-start: var(--hairline) solid var(--c-rule);
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+}
+
+.pricing__notes:empty {
+  display: none;
+}
+
+.pricing__notes ul,
+.pricing__notes ol,
+.pricing__notes .pricing__notes-list {
+  display: grid;
+  gap: var(--space-2xs) var(--space-xl);
+  padding: 0;
+  list-style: none;
+}
+
+.pricing__notes li,
+.pricing__notes .pricing__notes-item {
+  position: relative;
+  padding-inline-start: 1.35rem;
+  max-inline-size: 52ch;
+}
+
+.pricing__notes li::before,
+.pricing__notes .pricing__notes-item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.85em;
+  inset-inline-start: 0;
+  inline-size: 0.6rem;
+  block-size: 1px;
+  background-color: var(--c-accent-a30);
+}
+
+.pricing__notes p {
+  max-inline-size: 62ch;
+}
+
+/* -----------------------------------------------------------------------------
+   9. Quote + form controls
+   -----------------------------------------------------------------------------
+
+   Seven fields — name, contact, address, units, property type, situation and
+   an optional message — which is a lot to look at in one column. Two things
+   keep it feeling short: a two-column grid from 48rem up, so the seven fields
+   read as four rows, and only the message spanning the full width. The unit
+   count is capped narrow because a three-digit number in a 24rem box looks
+   like a form that wants more than it is asking for.
+   -------------------------------------------------------------------------- */
+
+.quote {
+  padding-block: var(--space-section);
+}
+
+.quote__form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  align-items: start;
+  max-inline-size: var(--width-page);
+  padding: var(--space-lg);
+  background-color: var(--c-card);
+  border: var(--hairline) solid var(--c-rule);
+  border-radius: var(--radius-lg);
+}
+
+.quote__form:empty {
+  display: none;
+}
+
+/* Field wrappers, whatever element site.js uses. */
+.quote__form > div,
+.quote__form > p,
+.quote__form > fieldset,
+.quote__form .field,
+.quote__form .quote__field {
+  display: grid;
+  gap: var(--space-3xs);
+  min-inline-size: 0;
+}
+
+.quote__form legend {
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+}
+
+.quote__form label,
+.quote__details dt {
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.quote__form input,
+.quote__form select,
+.quote__form textarea {
+  inline-size: 100%;
+  min-block-size: 2.9rem;
+  padding: 0.7rem 0.9rem;
+  background-color: var(--c-paper);
+  /* --c-shadow is the darkest neutral in the palette that is not ink; at
+     3.7:1 on paper it clears the 3:1 minimum for control boundaries. */
+  border: var(--hairline) solid var(--c-shadow);
+  border-radius: var(--radius-sm);
+  color: var(--c-ink);
+  font-size: var(--step-0);
+  line-height: 1.4;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.quote__form textarea {
+  min-block-size: 6.5rem;
+  resize: vertical;
+}
+
+/* A unit count is at most four characters. Left at 100% it reads as a field
+   expecting an essay. */
+.quote__form input[type="number"] {
+  max-inline-size: 12rem;
+}
+
+.quote__form select {
+  appearance: none;
+  padding-inline-end: 2.5rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--c-ink) 50%),
+    linear-gradient(135deg, var(--c-ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.15rem) calc(50% + 0.1rem),
+    calc(100% - 0.8rem) calc(50% + 0.1rem);
+  background-size: 0.35rem 0.35rem, 0.35rem 0.35rem;
+  background-repeat: no-repeat;
+}
+
+.quote__form input:hover,
+.quote__form select:hover,
+.quote__form textarea:hover {
+  border-color: var(--c-ink);
+}
+
+.quote__form ::placeholder {
+  color: var(--c-muted);
+  opacity: 1;
+}
+
+/* Inline validation, however site.js flags it. */
+.quote__form [aria-invalid="true"] {
+  border-color: var(--c-danger);
+  box-shadow: 0 0 0 1px var(--c-danger);
+}
+
+.quote__form [data-error],
+.quote__form .field__error,
+.quote__form .error {
+  color: var(--c-danger);
+  font-size: var(--step--1);
+  line-height: 1.4;
+}
+
+.quote__form [data-error]:empty,
+.quote__form .field__error:empty {
+  display: none;
+}
+
+.quote__form button[type="submit"] {
+  justify-self: start;
+  grid-column: 1 / -1;
+  margin-block-start: var(--space-2xs);
+}
+
+/* The message is the only field that needs the whole width. Isolated in its
+   own rule so a browser without :has() drops this and nothing else. */
+.quote__form > *:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+.quote__form > *:has(textarea) textarea {
+  max-inline-size: 44rem;
+}
+
+/* Success / "not yet connected" confirmation from site.js. */
+.quote__form [role="status"],
+.quote__form [data-form-status] {
+  grid-column: 1 / -1;
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--c-paper);
+  border: var(--hairline) solid var(--c-accent-a30);
+  border-inline-start: 3px solid var(--c-accent);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+}
+
+.quote__form [role="status"]:empty,
+.quote__form [data-form-status]:empty {
+  display: none;
+  padding: 0;
+  border: 0;
+}
+
+/* site.js builds the confirmation as a div[role=status] holding a title, a
+   note, a contact line and the hours. It is styled by the [role="status"]
+   rule above; these give it its internal rhythm. */
+.quote__form .quote__confirmation > * + * {
+  margin-block-start: var(--space-2xs);
+}
+
+/* "…but your request was not sent." is the single most important sentence in
+   this panel and it must not read as the first line of a paragraph: two type
+   steps above the note, medium weight, full ink. */
+.quote__form .quote__confirmation-title {
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-heading);
+  text-wrap: balance;
+  max-inline-size: 30ch;
+}
+
+.quote__form .quote__confirmation-note {
+  color: var(--c-ink);
+  line-height: var(--lh-loose);
+  max-inline-size: 72ch;
+}
+
+.quote__form .quote__confirmation-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  margin-block-start: var(--space-xs);
+}
+
+/* Nothing is sent anywhere, so the phone and email inside the confirmation
+   ARE the fallback — set at reading size and given the accent rather than
+   left as body-coloured runs of text. */
+.quote__form .quote__confirmation-tel,
+.quote__form .quote__confirmation-mail {
+  color: var(--c-accent-deep);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+.quote__form .quote__confirmation-hours {
+  color: var(--c-muted);
+}
+
+/* Only rendered when index.html does NOT bind quote.intro in the section
+   header — site.js checks, so the sentence can never appear twice. Styled
+   anyway, because "never" lasts until someone edits the markup. */
+.quote__form .quote__intro-text {
+  grid-column: 1 / -1;
+  margin-block-end: var(--space-2xs);
+  color: var(--c-muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+  max-inline-size: 60ch;
+}
+
+/* --- the shape js/site.js builds --------------------------------------------
+   Explicit rows so a field WITH a hint still lines its input up with the
+   fields that have none. site.js emits label -> hint -> input -> error in the
+   DOM (label and hint read together for a screen reader); visually the hint
+   sits under the control, which is the commoner pattern. If site.js ever
+   reorders those nodes, delete the `grid-row` declarations here. */
+
+.quote__form .quote__field {
+  grid-template-rows: auto auto auto auto;
+  gap: var(--space-3xs);
+}
+
+.quote__form .quote__label {
+  grid-row: 1;
+}
+
+.quote__form .quote__input {
+  grid-row: 2;
+  margin-block-start: var(--space-3xs);
+}
+
+.quote__form .quote__hint {
+  grid-row: 3;
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-body);
+  text-transform: none;
+  line-height: 1.45;
+}
+
+.quote__form .quote__error {
+  grid-row: 4;
+  color: var(--c-danger);
+  font-size: var(--step--1);
+  font-weight: var(--fw-medium);
+  line-height: 1.45;
+}
+
+.quote__form .quote__submit {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-block-start: var(--space-2xs);
+}
+
+/* --- how to reach a person -------------------------------------------------
+   Phone, email, hours, address. With no backend wired, this block is the only
+   route that actually works, so it is not filed away as fine print. */
+
+.quote__details:empty {
+  display: none;
+}
+
+.quote__details {
+  display: grid;
+  gap: var(--space-md) var(--space-xl);
+  margin-block-start: var(--space-xl);
+  padding-block-start: var(--space-lg);
+  border-block-start: var(--hairline) solid var(--c-rule);
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+}
+
+.quote__details a {
+  color: var(--c-accent-deep);
+}
+
+.quote__detail {
+  margin: 0;
+}
+
+/* The phone number is the highest-intent thing on the page after the form. */
+.quote__detail--phone a,
+.quote__details .quote__phone {
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-heading);
+  text-decoration: none;
+  border-block-end: 1px solid var(--c-accent-a30);
+}
+
+.quote__detail--phone a:hover,
+.quote__details .quote__phone:hover {
+  border-block-end-color: var(--c-accent);
+}
+
+.quote__detail--address,
+.quote__detail--hours,
+.quote__detail--area {
+  color: var(--c-muted);
+}
+
+.quote__details dd {
+  margin: 0;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+}
+
+.quote__details address {
+  font-style: normal;
+}
+
+/* -----------------------------------------------------------------------------
+   10. Sticky CTA
+   Hidden by default; revealed only once Motion puts .is-scrolled on <body>.
+   -------------------------------------------------------------------------- */
+
+/* Round 1 stretched this edge to edge on a phone, so it read as a bar sitting
+   on top of the page rather than as an affordance. It is now a compact pill in
+   the bottom corner: still fixed, still always one tap away, but it covers a
+   corner instead of a line of copy. Height stays at the 44px tap-target floor. */
+.sticky-cta {
+  position: fixed;
+  z-index: 90;
+  inset-block-end: max(var(--space-md), env(safe-area-inset-bottom, 0px));
+  inset-inline: auto max(var(--space-md), env(safe-area-inset-right, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2.75rem;
+  max-inline-size: calc(100vw - var(--space-xl));
+  padding: 0.6rem var(--space-md);
+  background-color: var(--c-ink);
+  color: var(--c-paper-invert);
+  border: var(--hairline) solid var(--c-accent-a30);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-cta);
+  font-size: var(--step--2);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: center;
+
+  /* hidden state */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(calc(100% + var(--space-lg)));
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-slow) var(--ease-entrance),
+              visibility 0s linear var(--dur-base),
+              background-color var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
+}
+
+body.is-scrolled .sticky-cta {
+  /* revealed state */
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+/* Once the quote section is on screen the visitor has arrived: a floating
+   shortcut to it is now pure obstruction, and on a phone it sits directly on
+   top of the form's own fields. Retract it. `.at-quote` is set by scroll.js. */
+body.at-quote .sticky-cta {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.75rem);
+}
+
+.sticky-cta:hover {
+  background-color: var(--c-accent-hover);
+  border-color: var(--c-accent);
+  color: var(--c-paper);
+}
+
+/* Nothing to click before site.js writes the label in. */
+.sticky-cta:empty {
+  display: none;
+}
+
+/* -----------------------------------------------------------------------------
+   11. Site footer
+   -------------------------------------------------------------------------- */
+
+.site-footer {
+  padding-block: var(--space-2xl) var(--space-3xl);
+  background-color: var(--surface-dark);
+  color: var(--text-on-dark);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+}
+
+.site-footer a {
+  color: var(--text-on-dark);
+  text-decoration-color: var(--c-accent);
+}
+
+.site-footer a:hover {
+  color: #fff;
+}
+
+.site-footer h2,
+.site-footer h3,
+.site-footer [data-bind="name"],
+.site-footer__name {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-snug);
+  color: var(--text-on-dark);
+}
+
+/* --- the exact shape js/site.js builds ------------------------------------- */
+
+.site-footer__address {
+  color: var(--text-on-dark);
+  font-size: var(--step-0);
+}
+
+/* --- the honesty disclosure -------------------------------------------------
+   These are the lines that say the footage is AI-generated and the drawings
+   are placeholders. They are the most important text in the footer and they
+   are deliberately NOT set at fine-print size: --step--1 with a real measure,
+   on the full-strength on-dark colour, so they read as a statement rather than
+   as something being got out of the way. Round 1 had them at --step--2 running
+   the whole 1440px, which is both harder to read and easier to dismiss.
+   -------------------------------------------------------------------------- */
+
+.site-footer__honesty {
+  margin-block-start: var(--space-xl);
+  padding-block-start: var(--space-lg);
+  border-block-start: var(--hairline) solid var(--c-rule-invert);
+}
+
+.site-footer__honesty-title {
+  color: var(--text-on-dark);
+  font-size: var(--step--1);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+}
+
+/* site.js writes the disclosure as one paragraph under the heading. The brass
+   rule beside it is the same weight the featured pricing tier gets: this is a
+   statement about the business, not a caption. */
+.site-footer__honesty-body {
+  margin-block-start: var(--space-md);
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--c-accent);
+  /* Two things this paragraph must never lose, because it is the statement
+     that the footage is AI-generated and depicts no property under
+     management: a MEASURE, so it cannot run the full 1440px as a single
+     unreadable line (the v2 regression), and BODY SIZE — --step-0, the same
+     as the page's running text, one step above the --step--1 the rest of the
+     footer uses and two above the fine print. The blanket rule below is the
+     belt to this braces: any prose that lands in the footer keeps a measure
+     whether or not anyone remembered to give it one. */
+  max-inline-size: 68ch;
+  color: var(--text-on-dark);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+}
+
+/* Kept for the list shape: if the disclosure is ever split into separate
+   claims again, they inherit the same weight rather than falling back to
+   fine print. Scoped past the generic `.site-footer ul`, which is one class
+   plus one element and would otherwise win the gap back. */
+.site-footer .site-footer__honesty-list {
+  display: grid;
+  gap: var(--space-sm);
+  margin-block-start: var(--space-md);
+  list-style: none;
+  padding: 0;
+}
+
+.site-footer__honesty-item {
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--c-rule-invert);
+  max-inline-size: 68ch;
+  color: var(--text-on-dark);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+}
+
+.site-footer__honesty-item--footage {
+  border-inline-start-color: var(--c-accent);
+}
+
+/* Nothing in the footer is allowed to run the full content width as prose.
+   Anything with its own measure overrides this; anything without inherits
+   one. */
+.site-footer p,
+.site-footer li,
+.site-footer address {
+  max-inline-size: 68ch;
+}
+
+.site-footer__equal-housing {
+  margin-block-start: var(--space-xl);
+  padding-block-start: var(--space-lg);
+  border-block-start: var(--hairline) solid var(--c-rule-invert);
+}
+
+.site-footer__equal-housing,
+.site-footer__disclaimer {
+  color: var(--text-on-dark-secondary);
+  font-size: var(--step--2);
+  max-inline-size: 68ch;
+}
+
+.site-footer__disclaimer {
+  margin-block-start: var(--space-2xs);
+}
+
+.site-footer > * + * {
+  margin-block-start: var(--space-md);
+}
+
+.site-footer ul {
+  display: grid;
+  gap: var(--space-2xs);
+  list-style: none;
+  padding: 0;
+}
+
+.site-footer address {
+  font-style: normal;
+}
+
+.site-footer small,
+.site-footer .legal,
+.site-footer [data-legal] {
+  display: block;
+  color: var(--text-on-dark-secondary);
+  font-size: var(--step--2);
+  line-height: var(--lh-loose);
+}
+
+.site-footer hr {
+  border: 0;
+  border-block-start: var(--hairline) solid var(--c-rule-invert);
+  margin-block: var(--space-lg);
+}
+
+.site-footer img,
+.site-footer svg {
+  /* Equal Housing logo, if site.js supplies one. */
+  inline-size: auto;
+  max-block-size: 2.75rem;
+}
+
+/* -----------------------------------------------------------------------------
+   12. Focus, selection, reduced motion, print
+   -------------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
+}
+
+/* On the dark bands the deep-brass ring is nearly invisible; the raw accent
+   is 6.7:1 on ink, which is what a focus ring needs to be. */
+.site-footer :focus-visible,
+.why :focus-visible,
+.sticky-cta:focus-visible,
+.chapter.chapter--hero .chapter__media :focus-visible {
+  outline-color: var(--c-accent);
+}
+
+.quote__form input:focus-visible,
+.quote__form select:focus-visible,
+.quote__form textarea:focus-visible {
+  outline-offset: 1px;
+  border-color: var(--c-focus);
+}
+
+::selection {
+  background-color: var(--c-accent-a30);
+  color: var(--c-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  .sticky-cta {
+    transform: none;
+  }
+}
+
+@media print {
+  .site-header,
+  .sticky-cta,
+  .skip-link {
+    display: none !important;
+  }
+
+  .chapter,
+  .services,
+  .why,
+  .pricing,
+  .quote {
+    min-block-size: auto;
+    padding-block: var(--space-lg);
+    break-inside: avoid;
+  }
+
+  .why {
+    background: none;
+    color: #000;
+  }
+
+  .site-footer {
+    background: none;
+    color: #000;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   13. Responsive — mobile-first; these are the only breakpoints
+   -------------------------------------------------------------------------- */
+
+/* Large phone / small tablet. */
+@media (min-width: 34rem) {
+  .quote__form {
+    padding: var(--space-xl);
+  }
+
+  .quote__details {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+}
+
+/* Tablet. Services and reasons pair up; the quote form goes two-up, which is
+   what stops seven fields reading as a long list. */
+@media (min-width: 48rem) {
+  .services__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2xl) var(--space-xl);
+  }
+
+  .why__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2xl) var(--space-xl);
+  }
+
+  /* Measure caps, now that the columns are narrow enough for a long line to
+     look like a mistake rather than a paragraph. */
+  .services__grid h3,
+  .services__grid .services__name {
+    max-inline-size: 22ch;
+  }
+
+  .why__grid .why__stat,
+  .why__grid strong,
+  .why__grid b,
+  .why__grid dt {
+    max-inline-size: 14ch;
+  }
+
+  .why__grid h3,
+  .why__grid .why__name {
+    max-inline-size: 22ch;
+  }
+
+  /* Three tiers do not fit across a tablet, so they fall to 2 + 1 rather than
+     being squeezed to a width where the rate has to wrap. */
+  .pricing__tiers {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .pricing__notes ul,
+  .pricing__notes ol,
+  .pricing__notes .pricing__notes-list {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+
+  .quote__form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-md) var(--space-lg);
+  }
+
+  .site-footer {
+    padding-block: var(--space-3xl);
+  }
+}
+
+/* Desktop. The scene stays full-bleed; what changes is how much of the frame
+   the copy is allowed to take, and — every second chapter — which side of the
+   frame it hangs off. That alternation is the only thing keeping eight
+   full-screen scenes from reading as a slideshow. */
+@media (min-width: 62rem) {
+  .chapter__copy {
+    max-inline-size: min(100%, 38rem);
+    /* Margin, not padding — chapters.css owns this element's padding. */
+    margin-block-end: var(--space-2xl);
+  }
+
+  .chapter:nth-of-type(even) .chapter__copy {
+    justify-self: end;
+    justify-items: start;
+    text-align: start;
+  }
+
+  .chapter--hero .chapter__copy {
+    max-inline-size: min(100%, 46rem);
+  }
+
+  .section__title {
+    font-size: var(--step-4);
+  }
+
+  .services__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2xl) var(--space-xl);
+  }
+
+  /* auto-fit, so three reasons sit as three and four sit as four rather than
+     leaving a hole in a fixed track count. */
+  .why__grid {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--space-xl);
+  }
+
+  /* Section title on the left, the fee model beside it on the right, their
+     baselines hung from the same bottom line. Under the title the paragraph
+     was a ten-line column with the other half of the page empty beside it. */
+  .pricing {
+    grid-template-columns:
+      [full-start] minmax(var(--space-gutter), 1fr)
+      [content-start] minmax(0, calc((var(--width-page) - var(--space-2xl)) * 0.45)) [lead-end]
+      var(--space-2xl)
+      [model-start] minmax(0, calc((var(--width-page) - var(--space-2xl)) * 0.55)) [content-end]
+      minmax(var(--space-gutter), 1fr) [full-end];
+  }
+
+  .pricing__intro {
+    grid-column: content-start / lead-end;
+    grid-row: 1;
+    padding-block-end: 0;
+  }
+
+  .pricing__model {
+    grid-column: model-start / content-end;
+    grid-row: 1;
+    align-self: end;
+    max-inline-size: none;
+  }
+
+  .pricing__tiers {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-lg);
+    align-items: stretch;
+    margin-block-start: var(--space-3xl);
+  }
+
+  /* The featured tier grows PAST its neighbours — the third of the three
+     non-colour cues, after border weight and elevation. The negative margin
+     is absorbed by the section's own padding, so nothing overflows. */
+  .pricing__tiers > .pricing__tier--featured,
+  .pricing__tiers > .is-featured,
+  .pricing__tiers > [data-featured="true"],
+  .pricing__tiers > [data-featured=""] {
+    /* Raising the block padding variable grows the card AND moves the badge
+       with it, because the badge is positioned off the same value. */
+    --tier-pad-b: calc(var(--space-lg) + var(--space-md));
+    margin-block: calc(var(--space-md) * -1);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* The quote section splits: the ask and the contact details on the left,
+     the form itself on the right. The two columns plus the gap are subtracted
+     from --width-page, so the pair still line up with every section above.
+
+     Conditional on there actually BEING a form. With JavaScript off the form
+     and the details block are both `:empty` and hidden, and a two-column
+     template would leave the heading marooned in a 24rem rail beside an empty
+     half-page with the noscript fallback stranded below it. `:has()` keeps
+     the split for the case it was designed for; everything else — no JS, no
+     `:has()` support — gets the single-column rail, which is correct there. */
+  .quote:has([data-quote-form]:not(:empty)) {
+    grid-template-columns:
+      [full-start] minmax(var(--space-gutter), 1fr)
+      [content-start] minmax(0, var(--width-aside)) [aside-end]
+      var(--space-2xl)
+      [main-start] minmax(0, calc(var(--width-page) - var(--width-aside) - var(--space-2xl))) [content-end]
+      minmax(var(--space-gutter), 1fr) [full-end];
+    align-items: start;
+    row-gap: var(--space-xl);
+  }
+
+  .quote:has([data-quote-form]:not(:empty)) .quote__intro {
+    grid-column: content-start / aside-end;
+    grid-row: 1;
+    padding-block-end: 0;
+  }
+
+  .quote:has([data-quote-form]:not(:empty)) .quote__form {
+    grid-column: main-start / content-end;
+    grid-row: 1 / span 2;
+    max-inline-size: none;
+  }
+
+  .quote:has([data-quote-form]:not(:empty)) .quote__details {
+    grid-column: content-start / aside-end;
+    grid-row: 2;
+    margin-block-start: 0;
+    border-block-start: 2px solid var(--c-accent);
+  }
+
+  .sticky-cta {
+    inset-inline: auto var(--space-xl);
+    inset-block-end: var(--space-xl);
+  }
+
+  .site-footer {
+    grid-template-rows: auto;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   14. INTEGRATION NOTE (Structure -> integrator)   [v3 — management company]
+   -----------------------------------------------------------------------------
+
+   1. NO-JS COPY FALLBACKS. The DOM contract shows the [data-bind] elements
+      empty, but the non-negotiables also require the page to be readable with
+      JavaScript disabled. To satisfy both, index.html ships bracketed
+      placeholder text INSIDE each [data-bind] element. js/site.js overwrites
+      it via textContent, so with JS on the values in data/company.js always
+      win and nothing is duplicated at runtime. If site.js ever switches from
+      textContent to "only fill when empty", these fallbacks must be stripped
+      from index.html or the company data will be ignored.
+
+   2. PLACEHOLDER CONTACT DETAILS ARE HARDCODED IN THREE NOSCRIPT BLOCKS
+      (top of <main>, #quote, footer): [(555) 555-0100] as tel:+15555550100 and
+      [owners@example.com], plus a prefilled mailto: body listing the quote
+      fields. These cannot read data/company.js. When the real phone/email
+      land, update them in index.html too. Grep index.html for "5555550100"
+      and "example.com".
+
+   3. JS-INJECTED MARKUP IS STYLED IN TWO LAYERS. Every JS-built region is
+      styled first generically — by element and ARIA state (`h3`, `p`, `ul/li`,
+      `dl/dt/dd`, `strong`, `input`, `select`, `textarea`, `button`, `legend`,
+      `address`, `[aria-invalid="true"]`, `[role="status"]`, `[hidden]`) — so
+      the page stays legible if site.js is restructured. Then a second time
+      against the class names js/site.js ACTUALLY emits, read out of that file
+      rather than guessed:
+        services — article.services__item  (the CARD, not a list row)
+                   h3.services__name  p.services__body
+                   ul.services__list  li.services__list-item
+        why      — article.why__item  p.why__stat (optional, aria-hidden)
+                   h3.why__name  p.why__body
+        pricing  — p.pricing__model-text
+                   article.pricing__tier / .pricing__tier--featured
+                   p.pricing__badge   (label editable: tiers[].badge)
+                   h3.pricing__tier-name
+                   p.pricing__rate > span.pricing__rate-value
+                                   + span.pricing__rate-note   <- NESTED
+                   p.pricing__summary
+                   ul.pricing__includes  li.pricing__includes-item
+                   ul.pricing__notes-list  li.pricing__notes-item
+        quote    — p.quote__intro-text   (fallback only — see note 4)
+                   div.quote__field > label.quote__label
+                                    + p.quote__hint
+                                    + input|select|textarea.quote__input
+                                      (+ --number / --select / --textarea)
+                                    + p.quote__error
+                   button.quote__submit
+                   div.quote__confirmation[role=status] >
+                      p.quote__confirmation-title / -note / -contact / -hours
+                      a.quote__confirmation-tel / -mail
+                   p.quote__detail--phone / --email / --hours / --area
+                                  / --address
+        footer   — p.site-footer__name  p.site-footer__address
+                   section.site-footer__honesty > p.site-footer__honesty-title
+                                                + p.site-footer__honesty-body
+                   p.site-footer__equal-housing  p.site-footer__disclaimer
+      Two of these are counter-intuitive and cost a bug each if guessed:
+      `.services__item` is the CARD (the row is `.services__list-item`), and
+      `.pricing__rate-note` sits INSIDE `p.pricing__rate`, not beside it.
+      Every `.plans__*` and `.tour__*` rule from v1/v2 has been deleted; there
+      is no compatibility layer left, so a rename in site.js needs a rename
+      here.
+
+   3b. SPECIFICITY, IN ONE PLACE. The generic layer is written as
+      `.services__grid p` / `.pricing__tiers p` / `.why__grid p` — one class
+      plus one element, which outranks a bare class. So every class rule for
+      that same markup is scoped one level up (`.pricing__tiers
+      .pricing__rate`, `.why__grid .why__stat`) to win the cascade back. v2's
+      v2's pricing badge lost exactly this fight and rendered muted grey
+      instead of brass. Add a rule to the generic layer and you may need to
+      re-scope its specific counterpart.
+
+   3c. FIELD ORDER IN .quote__field. site.js emits
+      label -> hint -> input -> error. layout.css uses explicit `grid-row`
+      values to render the hint BELOW the input, so a field with a hint still
+      lines its control up with the fields that have none. If site.js orders
+      these nodes differently, drop the `grid-row` declarations in §9.
+
+   3d. THE MESSAGE FIELD SPANS BOTH COLUMNS via `.quote__form > *:has(textarea)`,
+      isolated in its own rule so a browser without :has() drops that rule and
+      nothing else. Every other field takes one column. If site.js wraps the
+      textarea more than one level deep inside the field, add an explicit
+      `grid-column: 1 / -1` to whatever it does emit.
+
+   4. `quote.intro` IS BOUND IN INDEX.HTML, NOT INJECTED. The #quote lede is
+      `<p class="section__lede" data-bind="quote.intro">`, so the data-bind
+      pass fills it. site.js should NOT also render quote.intro inside
+      [data-quote-form] or [data-quote-details], or the sentence appears twice.
+
+   5. MOTION HANDOFF — UNCHANGED FROM v2, AND DELIBERATELY SO. This file still
+      sets no transition, transform or opacity on .chapter / .chapter__media /
+      .chapter__copy and never reads --p, .is-active or .is-seen. The geometry
+      Motion depends on is untouched by the v3 repositioning:
+
+        - `.chapter__media` is `position: absolute; inset: 0` on the chapter,
+          so it fills the whole 100svh scene edge to edge. That declaration is
+          written as `.journey .chapter__media` — two classes — because
+          chapters.css restates `position: relative` on the same class and
+          loads later. If Motion needs the frame positioned differently,
+          change it there AND here; do not just raise specificity, or the
+          picture stops filling the chapter.
+        - `.chapter` carries ZERO padding for the same reason: padding on the
+          chapter would inset the picture. All chapter spacing lives on
+          `.chapter__copy`, and it is set with MARGIN, not padding, so
+          chapters.css can own that element's padding for the copy panel's
+          bleed without the two colliding.
+        - The copy is bottom-anchored (`align-content: end`) inside the content
+          rail and alternates side every second chapter at >= 62rem.
+        - `.journey` still has overflow-x: clip.
+
+   6. THE SCRIM IS MOTION'S, DELIBERATELY. layout.css draws no veil over the
+      artwork. It did for one iteration, and stacked on top of the always-on
+      scrim in chapters.css it turned every chapter near-black — the artwork
+      was gone and contrast was 11:1 where 4.5:1 was needed. What this file
+      guarantees instead is placement: the copy is bottom-anchored, which is
+      the band chapters.css weights its veil for. If the copy is ever moved to
+      the top or centre of the frame, re-measure before shipping.
+
+   7. THE POSTER STILL IS PAINTED TWICE, ON PURPOSE, AND ONE OF THEM IS
+      CURRENTLY THE ONLY ONE THAT WORKS.
+
+      js/scroll.js reads each video's `poster` attribute and writes it to
+      `--chapter-poster` as an inline style on `.chapter__media`; chapters.css
+      then paints it with `background-image: var(--chapter-poster)`. The URL in
+      that custom property is resolved against the stylesheet the `var()` is
+      USED in — css/chapters.css — not against the document, so
+      `assets/video/x-poster.jpg` is fetched as `css/assets/video/x-poster.jpg`
+      and 404s.
+
+      Fix for Motion, in js/scroll.js, one line:
+          var abs = new URL(poster, document.baseURI).href;
+          ... .setProperty('--chapter-poster', 'url("' + abs + '")');
+      Until then, `.chapter[data-art="…"]` in §4 paints the same four posters
+      as a background on the CHAPTER, underneath the media frame, with
+      `../assets/…` paths that resolve correctly from css/. It needs no
+      JavaScript at all, so the still is there before scroll.js runs and if it
+      never runs. Both point at the same URL, so it is one download either way.
+
+   8. OG IMAGE. The Open Graph / Twitter image points at
+      assets/exterior-aerial.svg. Several scrapers (Twitter, Slack) will not
+      render an SVG preview. Before launch, export a 1200x630 PNG to
+      assets/og-cover.png and repoint the four og:image / twitter:image tags.
+      Whatever replaces it must not read as a photograph of a building this
+      company manages — the alt text on all four tags says plainly that it is
+      an illustration and not a property under management.
+
+   9. CANONICAL URL. index.html uses https://example.com/ as a placeholder in
+      <link rel="canonical">, og:url and the og/twitter image URLs. Replace at
+      deploy time.
+
+   10. THE PER-CHAPTER HONESTY LABEL. All eight chapters carry
+      `<p class="chapter__note" data-media-note data-bind="legal.footageLabel">`
+      (video) or `legal.artLabel` (SVG), with the text also written inline so
+      it is readable with JavaScript off. Three hooks on one element on purpose:
+      `data-bind` is Content's, `data-media-note` and `.chapter__note` are the
+      two selectors chapters.css styles the chip with, and this file positions
+      it. Rename none of them without checking the other two files.
+
+   11. data/property.js IS DEAD. index.html now loads `data/company.js` and
+      site.js reads `window.COMPANY`. The old file is Content's to delete —
+      Structure does not touch data/. Until it goes, it is simply unreferenced.
+   -------------------------------------------------------------------------- */

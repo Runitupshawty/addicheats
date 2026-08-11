@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>[COMPANY NAME] — Property management for owners and investors in [CITY / METRO AREA]</title>
+  <meta name="description" content="[COMPANY NAME] manages small and mid-size multifamily property for owners and investors in [CITY / METRO AREA]: leasing, maintenance, inspections, accounting and compliance, run by one team. Request a management quote.">
+  <meta name="theme-color" content="#FBF8F3">
+  <meta name="color-scheme" content="light">
+  <link rel="canonical" href="https://example.com/">
+
+  <!-- Open Graph — link previews (Facebook, iMessage, Slack, LinkedIn) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="[COMPANY NAME]">
+  <meta property="og:title" content="[COMPANY NAME] — Property management for owners and investors">
+  <meta property="og:description" content="Management for owners of small and mid-size multifamily in [CITY / METRO AREA]. Leasing, maintenance, inspections, accounting and compliance under one team. Request a management quote.">
+  <meta property="og:url" content="https://example.com/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://example.com/assets/exterior-aerial.svg">
+  <meta property="og:image:alt" content="Illustration of a four-storey brick residential building with a planted courtyard — an illustration of the standard we work to, not a property under management.">
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="[COMPANY NAME] — Property management for owners and investors">
+  <meta name="twitter:description" content="Management for owners of small and mid-size multifamily in [CITY / METRO AREA]. Request a management quote.">
+  <meta name="twitter:image" content="https://example.com/assets/exterior-aerial.svg">
+  <meta name="twitter:image:alt" content="Illustration of a four-storey brick residential building with a planted courtyard — an illustration of the standard we work to, not a property under management.">
+
+  <!-- Inline favicon: a brass hairline monogram. Kept as a data URI so the page
+       still makes zero external requests. -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316120E'/%3E%3Crect x='6.5' y='6.5' width='19' height='19' fill='none' stroke='%23B4813A' stroke-width='1.5'/%3E%3Crect x='13' y='16' width='6' height='9.5' fill='%23B4813A'/%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/chapters.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <span class="site-header__name" data-bind="name">[COMPANY NAME]</span>
+    <a class="site-header__cta" href="#quote" data-bind="cta.header">Get a Quote</a>
+  </header>
+
+  <main class="journey" id="main" tabindex="-1">
+
+    <noscript>
+      <div class="noscript-note" role="note">
+        <p class="noscript-note__title">JavaScript is off — and that is fine.</p>
+        <p>
+          Every chapter below, the address and the phone number are plain HTML
+          and are fully readable as-is. Three conveniences are unavailable: the
+          live copy pulled from <code>data/company.js</code>, the services,
+          pricing and “why owners choose us” lists, and the quote request form.
+          To ask for a management quote, call
+          <a href="tel:+15555550100">[(555) 555-0100]</a> or email
+          <a href="mailto:owners@example.com">[owners@example.com]</a>.
+        </p>
+      </div>
+    </noscript>
+
+    <!-- =====================================================================
+         The walkthrough — eight chapters, unchanged ids / data-chapter /
+         data-art / media, because js/scroll.js keys off every one of them.
+         What changed in v3 is only the argument the copy makes: this is not
+         a building for rent, it is the condition we hold buildings to.
+         ================================================================== -->
+
+    <!-- 1 ─ Arrival ─────────────────────────────────────────────────────── -->
+    <section class="chapter chapter--hero" id="ch-arrival"
+             data-chapter="arrival" data-art="exterior-aerial"
+             aria-labelledby="ch-arrival-title">
+      <div class="chapter__media" data-media>
+        <!-- Real footage. No `src` here on purpose — js/scroll.js picks 720 or
+             1080 from the viewport and only for chapters near the screen, so
+             four clips never download at once. The poster is what a visitor
+             sees with JavaScript off, or under prefers-reduced-motion. -->
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/exterior-aerial-720.mp4"
+               data-src-1080="assets/video/exterior-aerial-1080.mp4"
+             data-src-720-webm="assets/video/exterior-aerial-720.webm"
+             data-src-1080-webm="assets/video/exterior-aerial-1080.webm"
+               poster="assets/video/exterior-aerial-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note data-bind="legal.footageLabel">Illustrative footage — not a property under management</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.arrival.eyebrow">[Property management]</p>
+        <h1 class="chapter__title" id="ch-arrival-title" data-bind="name">[COMPANY NAME]</h1>
+        <p class="chapter__tagline" data-bind="tagline">[Property management for owners of small and mid-size multifamily]</p>
+        <h2 class="chapter__headline" data-bind="chapters.arrival.headline">[Hero headline — one line, set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.arrival.body">[Hero body copy — what the company does and which owners it works for. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- 2 ─ Approach ────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-approach"
+             data-chapter="approach" data-art="exterior-street"
+             aria-labelledby="ch-approach-title">
+      <div class="chapter__media" data-media>
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/exterior-street-720.mp4"
+               data-src-1080="assets/video/exterior-street-1080.mp4"
+             data-src-720-webm="assets/video/exterior-street-720.webm"
+             data-src-1080-webm="assets/video/exterior-street-1080.webm"
+               poster="assets/video/exterior-street-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note data-bind="legal.footageLabel">Illustrative footage — not a property under management</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.approach.eyebrow">[Kerb appeal]</p>
+        <h2 class="chapter__headline" id="ch-approach-title" data-bind="chapters.approach.headline">[Approach headline — set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.approach.body">[Approach body copy — exterior upkeep, and what the first look from the pavement tells a prospective tenant about how a building is run. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- 3 ─ Entrance ────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-entrance"
+             data-chapter="entrance" data-art="lobby"
+             aria-labelledby="ch-entrance-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/lobby.svg"
+             alt="Illustration of a lobby seen through the entry doors: a long timber-panelled wall, terrazzo floor, a brass mail wall, a bench and a pendant light over the concierge desk."
+             loading="lazy" decoding="async" width="1600" height="1000">
+        <p class="chapter__note" data-media-note data-bind="legal.artLabel">Illustration — placeholder for photography</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.entrance.eyebrow">[Common areas]</p>
+        <h2 class="chapter__headline" id="ch-entrance-title" data-bind="chapters.entrance.headline">[Entrance headline — set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.entrance.body">[Entrance body copy — lobbies and common areas, access control, and the cleaning cadence that keeps them this way. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- 4 ─ Living ──────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-living"
+             data-chapter="living" data-art="living"
+             aria-labelledby="ch-living-title">
+      <div class="chapter__media" data-media>
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/living-720.mp4"
+               data-src-1080="assets/video/living-1080.mp4"
+             data-src-720-webm="assets/video/living-720.webm"
+             data-src-1080-webm="assets/video/living-1080.webm"
+               poster="assets/video/living-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note data-bind="legal.footageLabel">Illustrative footage — not a property under management</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.living.eyebrow">[Turnover]</p>
+        <h2 class="chapter__headline" id="ch-living-title" data-bind="chapters.living.headline">[Turnover headline — set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.living.body">[Turnover body copy — the condition a unit is handed over in, the make-ready checklist, and how quickly it re-lets. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- 5 ─ Kitchen ─────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-kitchen"
+             data-chapter="kitchen" data-art="kitchen"
+             aria-labelledby="ch-kitchen-title">
+      <div class="chapter__media" data-media>
+        <video class="chapter__video" data-chapter-video
+               data-src-720="assets/video/kitchen-720.mp4"
+               data-src-1080="assets/video/kitchen-1080.mp4"
+             data-src-720-webm="assets/video/kitchen-720.webm"
+             data-src-1080-webm="assets/video/kitchen-1080.webm"
+               poster="assets/video/kitchen-poster.jpg"
+               muted playsinline preload="none"
+               disablepictureinpicture aria-hidden="true"></video>
+        <p class="chapter__note" data-media-note data-bind="legal.footageLabel">Illustrative footage — not a property under management</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.kitchen.eyebrow">[Preventive maintenance]</p>
+        <h2 class="chapter__headline" id="ch-kitchen-title" data-bind="chapters.kitchen.headline">[Maintenance headline — set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.kitchen.body">[Maintenance body copy — appliances and building systems on a service schedule, and capital items replaced before they fail. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- 6 ─ Rest ────────────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-rest"
+             data-chapter="rest" data-art="bedroom"
+             aria-labelledby="ch-rest-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/bedroom.svg"
+             alt="Illustration of a bedroom and adjoining bath: a bed against a quiet wall beside a curtained window, a wardrobe, and through the open door a tiled bathroom with a wall-hung vanity and mirror."
+             loading="lazy" decoding="async" width="1600" height="1000">
+        <p class="chapter__note" data-media-note data-bind="legal.artLabel">Illustration — placeholder for photography</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.rest.eyebrow">[Inspections]</p>
+        <h2 class="chapter__headline" id="ch-rest-title" data-bind="chapters.rest.headline">[Inspections headline — set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.rest.body">[Inspections body copy — routine interior checks, photographed and documented, so small problems are caught while they are still small. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- 7 ─ Amenities ───────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-amenities"
+             data-chapter="amenities" data-art="amenity-courtyard"
+             aria-labelledby="ch-amenities-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/amenity-courtyard.svg"
+             alt="Illustration of a shared courtyard: planted beds and a mature tree between brick wings, seating and a long table, with the glazed gym and laundry rooms visible behind the ground-floor windows."
+             loading="lazy" decoding="async" width="1600" height="1000">
+        <p class="chapter__note" data-media-note data-bind="legal.artLabel">Illustration — placeholder for photography</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.amenities.eyebrow">[Shared amenities]</p>
+        <h2 class="chapter__headline" id="ch-amenities-title" data-bind="chapters.amenities.headline">[Amenities headline — set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.amenities.body">[Amenities body copy — the shared spaces that cost money to keep and win renewals when they are kept. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- 8 ─ Neighborhood ────────────────────────────────────────────────── -->
+    <section class="chapter" id="ch-neighborhood"
+             data-chapter="neighborhood" data-art="neighborhood"
+             aria-labelledby="ch-neighborhood-title">
+      <div class="chapter__media" data-media>
+        <img src="assets/neighborhood.svg"
+             alt="Illustration of a neighbourhood with one building marked in brass among the surrounding blocks: a main street of low storefronts, a park, a transit stop and a river a few streets away."
+             loading="lazy" decoding="async" width="1600" height="1000">
+        <p class="chapter__note" data-media-note data-bind="legal.artLabel">Illustration — placeholder for photography</p>
+      </div>
+      <div class="chapter__copy">
+        <p class="chapter__eyebrow" data-bind="chapters.neighborhood.eyebrow">[Local market]</p>
+        <h2 class="chapter__headline" id="ch-neighborhood-title" data-bind="chapters.neighborhood.headline">[Market headline — set in data/company.js]</h2>
+        <p class="chapter__body" data-bind="chapters.neighborhood.body">[Market body copy — what rents are doing on these blocks, where demand is, and how a building is priced and positioned against it. Edit this in data/company.js.]</p>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         Services — 5–7 entries injected into [data-services] by js/site.js.
+         ================================================================== -->
+    <section class="services" id="services" aria-labelledby="services-title">
+      <div class="services__intro">
+        <p class="section__eyebrow">Services</p>
+        <h2 class="section__title" id="services-title">What we take on.</h2>
+      </div>
+      <div class="services__grid" data-services></div>
+    </section>
+
+    <!-- =====================================================================
+         Why owners choose us — injected into [data-why] by js/site.js.
+         ================================================================== -->
+    <section class="why" id="why" aria-labelledby="why-title">
+      <div class="why__intro">
+        <p class="section__eyebrow">Why us</p>
+        <h2 class="section__title" id="why-title">Why owners choose us.</h2>
+      </div>
+      <div class="why__grid" data-why></div>
+    </section>
+
+    <!-- =====================================================================
+         Pricing — the fee model, the tiers and the small print, all three
+         injected by js/site.js from COMPANY.pricing.
+         ================================================================== -->
+    <section class="pricing" id="pricing" aria-labelledby="pricing-title">
+      <div class="pricing__intro">
+        <p class="section__eyebrow">Pricing</p>
+        <h2 class="section__title" id="pricing-title">What it costs, in plain terms.</h2>
+      </div>
+      <div class="pricing__model" data-pricing-model></div>
+      <div class="pricing__tiers" data-pricing-tiers></div>
+      <div class="pricing__notes" data-pricing-notes></div>
+    </section>
+
+    <!-- =====================================================================
+         Request a quote. The form's fields are built by js/site.js: name,
+         contact, property address, unit count, property type, situation and
+         an optional message. Nothing is sent anywhere — see the noscript
+         block below and INTEGRATION NOTE 2 in css/layout.css.
+         ================================================================== -->
+    <section class="quote" id="quote" aria-labelledby="quote-title">
+      <div class="quote__intro">
+        <p class="section__eyebrow">Get started</p>
+        <h2 class="section__title" id="quote-title">Request a management quote.</h2>
+        <p class="section__lede" data-bind="quote.intro">[Quote intro — one or two sentences setting expectations about what happens after this form is sent. Edit this in data/company.js.]</p>
+      </div>
+
+      <form class="quote__form" data-quote-form novalidate></form>
+
+      <div class="quote__details" data-quote-details></div>
+
+      <noscript>
+        <div class="noscript-note noscript-note--quote" role="note">
+          <p class="noscript-note__title">Request a quote without JavaScript</p>
+          <p>
+            The form above is built with JavaScript. With it disabled, reach us
+            directly — both routes go to the same inbox and phone. Tell us the
+            property address, how many units it has, and whether it is
+            self-managed today.
+          </p>
+          <ul class="noscript-note__contact">
+            <li>
+              <a class="button button--primary"
+                 href="mailto:owners@example.com?subject=Management%20quote%20request&amp;body=Name%3A%0APhone%20or%20email%3A%0AProperty%20address%3A%0ANumber%20of%20units%3A%0AProperty%20type%3A%0ACurrent%20situation%20(self-managed%20%2F%20with%20another%20manager%20%2F%20new%20acquisition%20%2F%20still%20deciding)%3A%0AAnything%20else%3A%0A">Email [owners@example.com]</a>
+            </li>
+            <li>
+              <a class="button button--ghost" href="tel:+15555550100">Call [(555) 555-0100]</a>
+            </li>
+            <li class="noscript-note__meta">
+              [123 EXAMPLE ST], [CITY], [ST] [00000] &middot; [Mon–Fri 9–6]
+            </li>
+          </ul>
+        </div>
+      </noscript>
+    </section>
+
+  </main>
+
+  <a class="sticky-cta" href="#quote" data-sticky-cta>Get a Quote</a>
+
+  <footer class="site-footer" data-footer>
+    <noscript>
+      <div class="noscript-note noscript-note--footer" role="note">
+        <p class="noscript-note__title">[COMPANY NAME]</p>
+        <p>
+          [123 EXAMPLE ST], [CITY], [ST] [00000] &middot;
+          <a href="tel:+15555550100">[(555) 555-0100]</a> &middot;
+          <a href="mailto:owners@example.com">[owners@example.com]</a> &middot;
+          [Mon–Fri 9–6]
+        </p>
+        <p>
+          About the imagery on this page: the moving footage is AI-generated and
+          the still scenes are drawings. None of it depicts a property this
+          company manages, and nothing on this site is offered for rent.
+        </p>
+        <p>Equal Housing Opportunity.</p>
+        <p>[Fees and terms are illustrative and subject to agreement.]</p>
+      </div>
+    </noscript>
+  </footer>
+
+  <script src="data/company.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/scroll.js"></script>
+</body>
+</html>
