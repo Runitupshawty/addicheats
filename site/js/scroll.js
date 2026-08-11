@@ -610,6 +610,13 @@
 
           if (window.SiteMotion) window.SiteMotion.refresh();
 
+      One caution while we are here: `--p` is safe to use for `transform`,
+      `opacity`, `color` and the like, but do not drive a layout-affecting
+      property with it (height, margin, font-size, grid sizing). Doing so makes
+      the page resize as it scrolls, which trips the ResizeObserver, which
+      re-measures, which changes `--p` again — a slow feedback loop that will
+      look like jitter.
+
    4. THE `<img>` INSIDE `[data-media]`
       chapters.css styles `.chapter__media img`, per the brief. Whoever fills
       `[data-media]` should put a single `<img>` there, with real alt text
