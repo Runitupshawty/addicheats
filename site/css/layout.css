@@ -528,7 +528,10 @@ body.is-scrolled .site-header {
   justify-items: start;
   max-inline-size: min(100%, 44rem);
 
-  margin-block: calc(var(--header-height) + var(--space-md)) var(--space-lg);
+  /* The block end value also has to clear the bleed on chapters.css's copy
+     panel, which is a `::before` inset negatively past this box — too small a
+     margin and the panel laps over the top of the next chapter. */
+  margin-block: calc(var(--header-height) + var(--space-md)) var(--space-xl);
 }
 
 .chapter__eyebrow {
@@ -1515,7 +1518,8 @@ body.is-scrolled .sticky-cta {
 @media (min-width: 62rem) {
   .chapter__copy {
     max-inline-size: min(100%, 38rem);
-    padding-block-end: var(--space-3xl);
+    /* Margin, not padding — chapters.css owns this element's padding. */
+    margin-block-end: var(--space-2xl);
   }
 
   .chapter:nth-of-type(even) .chapter__copy {
@@ -1577,16 +1581,32 @@ body.is-scrolled .sticky-cta {
       `[hidden]`, `dl/dt/dd`, `ul/li`, `address`, `small`, `hr`, `img`) and
       then a second time against the concrete class names js/site.js currently
       emits, each under a `the exact shape js/site.js builds` comment:
-        plans  — .plans__tab .plans__panel .plans__art .plans__facts
-                 .plans__spec .plans__rent .plans__badge .plans__cta
+        plans  — .plans__tab .plans__panel .plans__figure .plans__art
+                 .plans__caption/-text .plans__facts .plans__facts-head
+                 .plans__name .plans__badge .plans__note .plans__keyfigures
+                 .plans__keyfigure/-label/-value/-unit .plans__rent
+                 .plans__size .plans__specs .plans__specrow/-label/-value
+                 .plans__cta
         tour   — .tour__field .tour__label .tour__hint .tour__input
                  .tour__error .tour__submit
+                 .tour__confirmation-tel/-mail/-hours
         details— .tour__detail--phone/--email/--address/--hours
-        footer — .site-footer__name/__address/__equal-housing/__imagery/
-                 __disclaimer
+        footer — .site-footer__name/__address/__honesty/__honesty-title/
+                 __honesty-list/__honesty-item(--footage|--stills)/
+                 __equal-housing/__disclaimer
       If site.js renames any of these, the page degrades to the generic layer
       (still legible, less refined) rather than breaking. Renames are cheap to
       re-point here; deletions are not, so prefer renaming over restructuring.
+
+   3a. SPECIFICITY, IN ONE PLACE. The generic layer is written as
+      `.plans__panels dl` / `dt` / `dd` / `p` / `h3` and `.site-footer ul` —
+      one class plus one element, which outranks a bare class. So every
+      round-2 class rule for that markup is scoped one level up
+      (`.plans__panels .plans__keyfigures`, `.site-footer
+      .site-footer__honesty-list`) to win the cascade back. Round 1's
+      `.plans__badge` lost exactly this fight and rendered muted grey instead
+      of brass. Add a rule to the generic layer and you may need to re-scope
+      its specific counterpart.
 
    3b. FIELD ORDER IN .tour__field. site.js emits label → hint → input →
       error. layout.css uses explicit `grid-row` values to render the hint
@@ -1594,21 +1614,86 @@ body.is-scrolled .sticky-cta {
       the fields that have none. If site.js reorders these nodes, drop the
       `grid-row` declarations in the `.tour__field` block.
 
-   4. MOTION HANDOFF. This file sets no transition, transform or opacity on
-      .chapter / .chapter__media / .chapter__copy, and never reads --p,
-      .is-active or .is-seen. css/chapters.css loads last and can override the
-      chapter box model freely. Two things Motion should know:
-        - .chapter__media has overflow:clip-like containment (overflow:hidden)
-          and a fixed aspect-ratio, so scaling the inner <img> is safe.
-        - .journey has overflow-x: clip; horizontal translation beyond the
-          viewport will be clipped rather than producing a scrollbar.
+   4. MOTION HANDOFF — CHANGED IN ROUND 2. This file still sets no transition,
+      transform or opacity on .chapter / .chapter__media / .chapter__copy and
+      never reads --p, .is-active or .is-seen. What changed is the geometry:
 
-   5. OG IMAGE. The Open Graph / Twitter image points at
+        - `.chapter__media` is now `position: absolute; inset: 0` on the
+          chapter, so it fills the whole 100svh scene edge to edge. That one
+          declaration is written as `.journey .chapter__media` — two classes —
+          because chapters.css restates `position: relative` on the same class
+          and loads later. If Motion needs the frame positioned differently,
+          change it there AND here; do not just raise specificity, or the
+          picture stops filling the chapter.
+        - `.chapter` carries ZERO padding for the same reason: padding on the
+          chapter would inset the picture. All chapter spacing lives on
+          `.chapter__copy`, and it is set with MARGIN, not padding, so that
+          chapters.css can own that element's padding for the copy panel's
+          bleed without the two colliding.
+        - The copy is bottom-anchored (`align-content: end`) inside the content
+          rail and alternates side every second chapter at >= 62rem.
+        - `.journey` still has overflow-x: clip.
+
+   5. THE SCRIM IS MOTION'S, DELIBERATELY. layout.css draws no veil over the
+      artwork. It did for one iteration, and stacked on top of the always-on
+      scrim in chapters.css it turned every chapter near-black — the artwork
+      was gone and contrast was 11:1 where 4.5:1 was needed. What this file
+      guarantees instead is placement: the copy is bottom-anchored, which is
+      the band chapters.css weights its veil for. If the copy is ever moved to
+      the top or centre of the frame, re-measure before shipping.
+
+      Contrast was verified by rendering the real page with the text set to
+      transparent and sampling the lightest pixel inside every text run's box,
+      at 390 / 768 / 1440, over both the video posters and the SVG art, and
+      again with the property name replaced by a 40-character one. 102 samples
+      per pass; worst across all of them 5.93:1, on the hero eyebrow with the
+      long name at 1440. Body copy never drops below 10.7:1.
+
+   6. THE POSTER STILL IS PAINTED TWICE, ON PURPOSE, AND ONE OF THEM IS
+      CURRENTLY THE ONLY ONE THAT WORKS.
+
+      js/scroll.js reads each video's `poster` attribute and writes it to
+      `--chapter-poster` as an inline style on `.chapter__media`; chapters.css
+      then paints it with `background-image: var(--chapter-poster)`. The URL in
+      that custom property is resolved against the stylesheet the `var()` is
+      USED in — css/chapters.css — not against the document, so
+      `assets/video/x-poster.jpg` is fetched as `css/assets/video/x-poster.jpg`
+      and 404s. Combined with chapters.css hiding a video that errored, two of
+      the four video chapters rendered as solid black rectangles at 1440.
+
+      Fix for Motion, in js/scroll.js, one line:
+          var abs = new URL(poster, document.baseURI).href;
+          ... .setProperty('--chapter-poster', 'url("' + abs + '")');
+      Until then, `.chapter[data-art="…"]` in section 4 of this file paints the
+      same four posters as a background on the CHAPTER, underneath the media
+      frame, with `../assets/…` paths that resolve correctly from css/. It is
+      also a genuine improvement in its own right: it needs no JavaScript at
+      all, so the still is there before scroll.js runs and if it never runs.
+      Both point at the same URL, so it is one download either way, and the
+      rules are harmless once the JS is fixed. `.chapter__media` is
+      `background-color: transparent` so this can show through.
+
+   6b. TWO CLIPS FAIL TO LOAD OVER file://. exterior-aerial-1080.mp4 and
+      living-1080.mp4 — the two largest files — raise a request failure in
+      headless Chromium on a file:// origin, which is what puts those chapters
+      into `data-video-state="error"`. The 720 variants and the two smaller
+      1080s load. Worth re-testing over HTTP before assuming it is an encoding
+      problem; note 6 is what stops it being visible either way.
+
+   7. OG IMAGE. The Open Graph / Twitter image points at
       assets/exterior-aerial.svg. Several scrapers (Twitter, Slack) will not
       render an SVG preview. Before launch, export a 1200x630 PNG to
       assets/og-cover.png and repoint the four og:image / twitter:image tags.
 
-   6. CANONICAL URL. index.html uses https://example.com/ as a placeholder in
+   8. CANONICAL URL. index.html uses https://example.com/ as a placeholder in
       <link rel="canonical">, og:url and the og/twitter image URLs. Replace at
       deploy time.
+
+   9. THE PER-CHAPTER HONESTY LABEL. All eight chapters carry
+      `<p class="chapter__note" data-media-note data-bind="legal.footageLabel">`
+      (video) or `legal.artLabel` (SVG), with the text also written inline so
+      it is readable with JavaScript off. Three hooks on one element on purpose:
+      `data-bind` is Data's, `data-media-note` and `.chapter__note` are the two
+      selectors chapters.css styles the chip with, and this file positions it.
+      Rename none of them without checking the other two files.
    -------------------------------------------------------------------------- */
