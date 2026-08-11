@@ -144,7 +144,8 @@ legend {
   /* --- derived: text-safe variants ---------------------------------------- */
   /* Raw --c-accent is 3.2:1 on paper — decorative + large display only.       */
   --c-accent-deep: #8a5f22;    /* brass as TEXT           5.3:1 on --c-paper   */
-  --c-accent-hover: #6f4b1a;   /* pressed / hovered brass                      */
+  --c-accent-deeper: #6f4b1a;  /* brass on a brass tint   5.8:1 on 12% accent  */
+  --c-accent-hover: var(--c-accent-deeper); /* pressed / hovered brass         */
   --c-ink-soft: #2a231b;       /* softened ink for large dark fills            */
   --c-paper-invert: #f6f1e8;   /* body text ON ink       16.6:1 on --c-ink     */
   --c-muted-invert: #b9ae9e;   /* secondary text ON ink   8.6:1 on --c-ink     */

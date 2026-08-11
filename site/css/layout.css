@@ -484,6 +484,17 @@ body.is-scrolled .site-header {
   display: none;
 }
 
+/* Below ~768px three plan names cannot fit on one line, so the row scrolls.
+   Fade the trailing edge so it reads as scrollable rather than truncated. */
+@media (max-width: 47.999rem) {
+  @supports (mask-image: linear-gradient(#000, #000)) or (-webkit-mask-image: linear-gradient(#000, #000)) {
+    .plans__tabs {
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+      mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+    }
+  }
+}
+
 /* Tabs are real <button>s injected by js/site.js — styled by element + state so
    they inherit correctly whatever classes that markup carries. */
 .plans__tabs button {
@@ -617,8 +628,10 @@ body.is-scrolled .site-header {
   background-color: var(--c-accent-a12);
   border: var(--hairline) solid var(--c-accent-a30);
   border-radius: var(--radius-pill);
-  color: var(--c-accent-deep);
+  /* Brass on a brass tint needs the deeper step to clear 4.5:1 at this size. */
+  color: var(--c-accent-deeper);
   font-size: var(--step--2);
+  font-weight: var(--fw-medium);
   letter-spacing: var(--ls-caps);
   text-transform: uppercase;
   max-inline-size: none;
@@ -1198,7 +1211,7 @@ body.is-scrolled .sticky-cta {
     margin-inline: max(var(--space-gutter), calc((100% - var(--width-page)) / 2));
     margin-block-start: calc(var(--space-3xl) * -1);
     padding: var(--space-2xl);
-    max-inline-size: 44rem;
+    max-inline-size: 50rem;
   }
 
   .plans__intro,
@@ -1261,10 +1274,28 @@ body.is-scrolled .sticky-cta {
       phone/email land, update them in index.html too, or delete the noscript
       contact block. Grep index.html for "5555550100" and "example.com".
 
-   3. FOOTER MARKUP. layout.css styles [data-footer] children generically
-      (h2/h3, ul, address, small, hr, img). If site.js needs a different shape,
-      the cheapest additions here would be a `.site-footer__legal` class on the
-      legal lines and a `.site-footer__brand` on the name block.
+   3. JS-INJECTED MARKUP IS STYLED IN TWO LAYERS. Every JS-built region is
+      styled first generically (by element and by ARIA state — `button`,
+      `input`, `select`, `[aria-selected="true"]`, `[aria-invalid="true"]`,
+      `[hidden]`, `dl/dt/dd`, `ul/li`, `address`, `small`, `hr`, `img`) and
+      then a second time against the concrete class names js/site.js currently
+      emits, each under a `the exact shape js/site.js builds` comment:
+        plans  — .plans__tab .plans__panel .plans__art .plans__facts
+                 .plans__spec .plans__rent .plans__badge .plans__cta
+        tour   — .tour__field .tour__label .tour__hint .tour__input
+                 .tour__error .tour__submit
+        details— .tour__detail--phone/--email/--address/--hours
+        footer — .site-footer__name/__address/__equal-housing/__imagery/
+                 __disclaimer
+      If site.js renames any of these, the page degrades to the generic layer
+      (still legible, less refined) rather than breaking. Renames are cheap to
+      re-point here; deletions are not, so prefer renaming over restructuring.
+
+   3b. FIELD ORDER IN .tour__field. site.js emits label → hint → input →
+      error. layout.css uses explicit `grid-row` values to render the hint
+      BELOW the input, so a field with a hint still lines its control up with
+      the fields that have none. If site.js reorders these nodes, drop the
+      `grid-row` declarations in the `.tour__field` block.
 
    4. MOTION HANDOFF. This file sets no transition, transform or opacity on
       .chapter / .chapter__media / .chapter__copy, and never reads --p,
