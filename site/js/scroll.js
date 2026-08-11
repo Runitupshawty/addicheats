@@ -417,18 +417,26 @@
    * ---------------------------------------------------------------------- */
 
   /**
-   * No rAF loop, no geometry cache, no `--p`. Every chapter is put straight
-   * into its settled end state and left there; chapters.css then draws them as
-   * plain static panels via its own `prefers-reduced-motion` block. Because we
-   * never set `--p`, the CSS falls back to its settled default — which is
-   * exactly the same state a visitor with JavaScript switched off gets.
+   * The animation engine does not run at all here. No geometry cache, no `--p`,
+   * no `.is-active`, and — crucially — no repeating rAF loop. Every chapter is
+   * put straight into its settled end state and left there; chapters.css then
+   * draws them as plain static panels via its own `prefers-reduced-motion`
+   * block. Because `--p` is never set, the CSS falls back to its settled
+   * default, which is exactly the state a visitor with JavaScript switched off
+   * gets too.
    *
-   * `.is-scrolled` still has to work, because the sticky CTA depends on it and
-   * that is functionality, not decoration. We get it from an IntersectionObserver
-   * watching a one-pixel sentinel parked one viewport down the page, so there is
-   * no polling of any kind. If IntersectionObserver is missing we simply leave
-   * the class on permanently — better a CTA that is always there than one that
-   * never appears.
+   * One thing does still have to work: `.is-scrolled`. The sticky CTA reveals
+   * off it, so it is functionality rather than decoration, and dropping it
+   * would hide the "Book a Tour" button from precisely the visitors least
+   * likely to go hunting for it.
+   *
+   * It is handled by a passive scroll listener that coalesces into a single
+   * animation frame — one frame per scroll burst, which reads `scrollY` and
+   * toggles one class. It does not re-schedule itself, so it is not a loop; it
+   * is the cheapest correct way to keep one boolean up to date. (An
+   * IntersectionObserver sentinel would avoid even that, but it reports only on
+   * threshold *crossings*, which makes jump-scrolls — anchor clicks, restored
+   * positions — fiddly to get right, and it is the harder thing to test.)
    */
   function startReduced() {
     mode = 'reduced';
@@ -446,66 +454,45 @@
     root.style.removeProperty('--scroll-progress');
     lastActiveEl = null;
 
-    setupScrolledSentinel();
+    window.addEventListener('scroll', onReducedScroll, { passive: true });
+    window.addEventListener('resize', onReducedScroll, { passive: true });
+    window.addEventListener('orientationchange', onReducedScroll, { passive: true });
+    reducedTick();
   }
 
-  /** The sentinel element and its observer, so reduced mode can be torn down. */
-  var sentinel = null;
-  var sentinelObserver = null;
+  /** rAF handle for the reduced-mode one-shot. Never re-schedules itself. */
+  var reducedRafId = 0;
 
-  function setupScrolledSentinel() {
+  function onReducedScroll() {
+    if (reducedRafId) return; // already queued for this burst
+    reducedRafId = window.requestAnimationFrame(reducedTick);
+  }
+
+  function reducedTick() {
+    reducedRafId = 0;
     var body = document.body;
     if (!body) return;
 
-    if (typeof window.IntersectionObserver !== 'function') {
-      body.classList.add('is-scrolled');
-      lastScrolledState = true;
-      return;
+    var vh = window.innerHeight || root.clientHeight || 1;
+    var y = scrollTop();
+    var scrolled = lastScrolledState === true
+      ? y >= vh - SCROLLED_HYSTERESIS_PX
+      : y >= vh;
+
+    if (scrolled !== lastScrolledState) {
+      body.classList.toggle('is-scrolled', scrolled);
+      lastScrolledState = scrolled;
     }
-
-    sentinel = document.createElement('div');
-    sentinel.setAttribute('aria-hidden', 'true');
-    sentinel.setAttribute('data-scroll-sentinel', '');
-    // A one-pixel-wide strip covering exactly the first viewport, positioned
-    // against the initial containing block. Absolutely positioned and hidden,
-    // so it costs nothing and cannot affect layout.
-    //
-    // It is a full viewport tall on purpose. A single-pixel marker parked at
-    // top:100vh would be wrong: an IntersectionObserver only reports when an
-    // element *crosses* a threshold, and a one-pixel marker jumped clean over
-    // — an anchor click, a restored scroll position — goes from "not
-    // intersecting, below" to "not intersecting, above" without ever changing
-    // its ratio, so no callback is delivered and the class never updates.
-    // A strip that fills the first viewport is intersecting at the top of the
-    // page, so any jump away from the top really is a change and really does
-    // fire.
-    sentinel.style.cssText =
-      'position:absolute;top:0;left:0;width:1px;height:100vh;' +
-      'pointer-events:none;visibility:hidden;';
-    body.appendChild(sentinel);
-
-    sentinelObserver = new IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        // The whole first viewport is above us => we are past it.
-        var past = entries[i].boundingClientRect.bottom <= 0;
-        if (past !== lastScrolledState) {
-          document.body.classList.toggle('is-scrolled', past);
-          lastScrolledState = past;
-        }
-      }
-    });
-    sentinelObserver.observe(sentinel);
   }
 
   function stopReduced() {
-    if (sentinelObserver) {
-      sentinelObserver.disconnect();
-      sentinelObserver = null;
+    if (reducedRafId) {
+      window.cancelAnimationFrame(reducedRafId);
+      reducedRafId = 0;
     }
-    if (sentinel && sentinel.parentNode) {
-      sentinel.parentNode.removeChild(sentinel);
-    }
-    sentinel = null;
+    window.removeEventListener('scroll', onReducedScroll);
+    window.removeEventListener('resize', onReducedScroll);
+    window.removeEventListener('orientationchange', onReducedScroll);
     mode = null;
   }
 
