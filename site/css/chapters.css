@@ -210,12 +210,17 @@
   pointer-events: none;
 }
 
-/* A clip that failed to load or decode is removed outright rather than left as
-   a black rectangle with a broken decoder behind it. js/scroll.js sets this
-   attribute from the element's own `error` event, and the poster published as
-   `--chapter-poster` above is what remains on screen. */
+/* A clip that failed to load or decode, or that cannot be seeked at all, is
+   removed outright rather than left as a black rectangle with a broken decoder
+   behind it — or, just as bad, as a frozen first frame sitting under copy that
+   talks about movement. js/scroll.js sets this attribute; `error` comes from
+   the element's own error event, `unseekable` from a host that does not serve
+   byte ranges. Either way the poster published as `--chapter-poster` above is
+   what remains on screen, and it is a proper still of the same scene. */
 .chapter[data-video-state="error"] .chapter__video,
-.chapter[data-video-state="error"] [data-chapter-video] {
+.chapter[data-video-state="error"] [data-chapter-video],
+.chapter[data-video-state="unseekable"] .chapter__video,
+.chapter[data-video-state="unseekable"] [data-chapter-video] {
   display: none;
 }
 
@@ -246,21 +251,52 @@
    `isolation: isolate`, which has no layout effect at all, is set normally so
    the panel's stacking context is never in doubt.
 
-   MEASURED CONTRAST — see the report accompanying this change. Figures are
-   from rendered pixels: the page is screenshotted with the text set to
-   `transparent`, and the lightest pixel inside each text run's bounding box is
-   sampled and compared with the text colour. Not estimated.
+   MEASURED CONTRAST
+   -----------------
+   Every number below is from rendered pixels, not from arithmetic. Method: the
+   real page is loaded over HTTP, the copy is set to `transparent`, the page is
+   screenshotted, and the LIGHTEST pixel inside each text run's bounding box is
+   sampled and compared with the colour the browser actually resolved for that
+   run. The lightest pixel is the worst case the glyphs sit on, so that is the
+   one that counts.
 
-     Body copy (#f6f1e8 on the scrim)
-       over the brightest video frame of all four clips ......  9.4:1 or better
-       over every SVG chapter ...............................  10.7:1 or better
-       against a deliberately impossible pure-white frame ....  5.4:1
-     Eyebrow (#e9c68f)
-       worst case across all chapters and scroll positions ....  5.2:1
+   Sampling only the frame that happens to be up at a given scroll position
+   would prove very little, because the scrub shows all 121 frames of a clip
+   while the copy sits still. So the headline measurement parks each video
+   chapter at three scroll positions and steps the playhead through the WHOLE
+   clip, sampling at every step — 252 samples per viewport.
 
-   The pure-white row is the one that matters for future footage: it is the
-   worst background that can physically exist, so any clip anyone ever drops in
-   here is already covered.
+     EVERY FRAME OF ALL FOUR CLIPS, three scroll positions each
+                                        1440x900        390x844
+       body ......................  10.27:1 or better   10.52:1 or better
+       headline ...................   9.09:1 or better    9.46:1 or better
+       hero title / tagline .......   7.57:1 or better    7.90:1 or better
+       eyebrow ....................   5.94:1 or better    6.21:1 or better
+
+     SETTLED SWEEP, all eight chapters, eleven positions across the plateau
+       over the SVG chapters:   body 11.0:1, headline 9.7:1, eyebrow 7.9:1
+       over the video chapters: body 11.3:1, headline 9.5:1, eyebrow 6.9:1
+
+     PURE WHITE BEHIND THE SCRIM — the impossible worst case
+                                        1440x900        390x844
+       body / headline / title ....   6.90:1 or better    7.35:1 or better
+       eyebrow ....................   5.24:1              5.60:1
+
+   Lowest number anywhere in any of that: 5.24:1, the hero eyebrow against a
+   pure-white frame at 1440. The threshold is 4.5:1.
+
+   That last row is the one that matters for footage nobody has shot yet. Pure
+   white is the brightest background that can physically exist, so if the copy
+   clears the threshold against it, no frame of any clip ever dropped into
+   these chapters can breach it either. The guarantee is a property of the
+   scrim, not of this particular footage.
+
+   TWO THINGS DELIBERATELY EXCLUDED FROM THE SAMPLE, because neither is a
+   background behind a glyph: layout.css's short brass rule, which is drawn as
+   `.chapter__eyebrow::before` and therefore falls inside the eyebrow's own
+   line box; and the opaque fixed header and sticky CTA, which paint OVER the
+   copy at some scroll positions — text under them is occluded, not
+   low-contrast.
    ------------------------------------------------------------------------ */
 
 /* Layer 1 — the veil over the media. Sits above the picture, below the copy.
@@ -382,11 +418,15 @@
 }
 
 /* Text colours to go with the scrim. The eyebrow cannot simply be --c-accent:
-   the brass (#B4813A) reaches only about 2.6:1 against a scrim this dark. The
-   lightened brass below measures 5.2:1 at its worst. Headline, title, tagline
-   and body take the invert token, which tokens.css documents at 16.6:1 on
-   solid ink and which measures 5.4:1 here against an impossible pure-white
-   frame. The text-shadow is belt-and-braces for an unusually bright patch. */
+   the brass (#B4813A) reaches only about 2.6:1 against a scrim this dark, and
+   layout.css's own lighter brass does not clear it either. The tint below is
+   the one that was measured — 5.94:1 at its worst across every frame of every
+   clip, 5.24:1 against an impossible pure-white frame.
+
+   Headline, title, tagline and body take the invert token, which tokens.css
+   documents at 16.6:1 on solid ink and which measures 7.57:1 here at its worst
+   over live footage. The text-shadow is belt-and-braces for a bright patch
+   arriving between two sampled frames. */
 .chapter:not([data-copy-scrim="off"]) .chapter__eyebrow {
   color: #f0d6a4;
   text-shadow: 0 1px 2px rgba(var(--scrim-ink), 0.6);
@@ -640,6 +680,8 @@
           <video class="chapter__video" data-chapter-video
                  data-src-720="assets/video/living-720.mp4"
                  data-src-1080="assets/video/living-1080.mp4"
+                 data-src-720-webm="assets/video/living-720.webm"
+                 data-src-1080-webm="assets/video/living-1080.webm"
                  poster="assets/video/living-poster.jpg"
                  muted playsinline preload="none"
                  disablepictureinpicture aria-hidden="true"></video>
@@ -651,9 +693,20 @@
       fetches nothing. Please do not add a `src` or a `<source>` child.
 
       js/scroll.js writes two things onto the DOM for this file to use:
-      `--chapter-poster` on `.chapter__media` (the poster URL, so it can be
-      painted underneath as a permanent floor) and `data-video-state` on the
-      `.chapter` (`idle` / `loading` / `ready` / `error`).
+
+        `--chapter-poster`  on `.chapter__media` — the poster URL, absolutised,
+            so this file can paint it underneath the clip as a permanent
+            floor. layout.css paints the same four stills on
+            `.chapter[data-art=…]` from the stylesheet, which needs no
+            JavaScript at all. Same URL, one download, two independent floors
+            under "never a black box". Both are wanted; keep both.
+
+        `data-video-state`  on the `.chapter` — `idle` / `loading` / `ready` /
+            `error` / `unseekable`. Section 2 hides the `<video>` outright on
+            the last two so the poster is what remains. `unseekable` is the
+            host-does-not-serve-byte-ranges case, which is a real deployment
+            condition rather than a broken file — see INTEGRATION NOTE 10 in
+            js/scroll.js. It degrades to a clean still, on purpose.
 
    E. THE PROVENANCE NOTE. Section 3c styles it, but it needs to exist in the
       markup. Any of `[data-media-note]`, `.chapter__media-note` or

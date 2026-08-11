@@ -168,6 +168,16 @@
   /** Refuse to squeeze a whole clip into a narrower window of `--p` than this. */
   var VIDEO_SCRUB_MIN_SPAN = 0.25;
 
+  /**
+   * How far a completed seek may land from where it was asked to before we
+   * treat it as not having happened at all. Generous — a real seek lands
+   * within a frame; this is looking for "did not move", not "landed early".
+   */
+  var VIDEO_STALL_TOLERANCE = 0.25;
+
+  /** That many times in a row, and the source is declared unscrubbable. */
+  var VIDEO_STALL_LIMIT = 3;
+
   /* ---------------------------------------------------------------------- *
    * Module state
    * ---------------------------------------------------------------------- */
@@ -188,7 +198,8 @@
 
   /**
    * Which container this browser can actually decode: 'mp4', 'webm', or ''
-   * when neither. Probed once, lazily, in canDecode().
+   * when neither. Probed once, lazily, in decodableFormat(). May be revised
+   * once by onVideoError() if the probe turns out to have been optimistic.
    */
   var videoFormat = null;
 
@@ -480,6 +491,9 @@
       gap: Infinity,    // px between this chapter's box and the viewport
       rank: Infinity,   // gap, biased in favour of clips already resident
       p: 0,
+      stalls: 0,        // consecutive seeks that completed without moving
+      seekFrom: 0,      // playhead when the in-flight seek was issued
+      seekTo: 0,        // where that seek was sent
       // The window of `--p` the clip is mapped across. Recomputed per chapter
       // in measure(); see reachableScrubWindow().
       scrubIn: VIDEO_SCRUB_IN,
@@ -618,6 +632,7 @@
     st.pending = -1;
     st.target = -1;
     st.duration = 0;
+    st.stalls = 0;
 
     // The markup ships `preload="none"` precisely so that assigning a `src`
     // does not start a download. We are the ones who decide it is time.
@@ -644,10 +659,12 @@
     st.pending = -1;
     st.target = -1;
     st.duration = 0;
+    st.stalls = 0;
 
     v.removeAttribute('src');
     v.preload = 'none';
-    if (st.chapter && st.chapter.getAttribute('data-video-state') !== 'error') {
+    var prior = st.chapter ? st.chapter.getAttribute('data-video-state') : '';
+    if (st.chapter && prior !== 'error' && prior !== 'unseekable') {
       st.chapter.setAttribute('data-video-state', 'idle');
     }
 
@@ -668,12 +685,88 @@
     }
   }
 
+  /**
+   * A `seeked` event is NOT proof that the position moved.
+   *
+   * Seeking a media element needs random access to the bytes, which over HTTP
+   * means the host has to answer a Range request with a 206. A host that
+   * ignores `Range` and returns the whole file with a 200 leaves the element
+   * with an empty `seekable` range: assignments to `currentTime` are accepted,
+   * `seeked` fires, and the position stays exactly where it was. So a naive
+   * "wait for seeked, then issue the next one" loop reports perfect health
+   * while the picture never changes — which is the worst kind of bug, because
+   * every instrument says it is working.
+   *
+   * The defence is to check the outcome rather than the event. Three seeks in
+   * a row that land nowhere near where they were sent and the source is
+   * declared unscrubbable: the clip is dropped and the poster takes over. A
+   * clean still is a perfectly respectable thing to show. A permanently frozen
+   * first frame, sitting under copy that talks about movement, is not.
+   */
   function onVideoSeeked(st) {
     st.seeking = false;
+    var v = st.el;
+
+    // The test is DID IT MOVE, not DID IT ARRIVE. Those are different
+    // questions and only the first one is safe to ask here. Under fast
+    // scrubbing this handler routinely runs for a seek whose target has
+    // already been superseded twice over: the playhead is somewhere sensible
+    // and travelling, just not at the newest target yet. Comparing against
+    // that target flags a perfectly healthy clip as broken — which it did,
+    // the first time this was written.
+    //
+    // So: a stall is a seek that was asked to travel a meaningful distance and
+    // did not move at all. That is the signature of a source with no seekable
+    // range, and nothing else produces it.
+    var asked = Math.abs(st.seekTo - st.seekFrom);
+    var moved = Math.abs(v.currentTime - st.seekFrom);
+
+    if (asked > VIDEO_STALL_TOLERANCE && moved < VIDEO_FRAME_SECONDS) {
+      st.stalls++;
+      if (st.stalls >= VIDEO_STALL_LIMIT) {
+        markUnscrubbable(st, 'seeks are completing without moving the playhead');
+        return;
+      }
+    } else {
+      st.stalls = 0;
+    }
+
     if (st.pending >= 0) {
       var t = st.pending;
       st.pending = -1;
       seekVideo(st, t);
+    }
+  }
+
+  /**
+   * Give up on this source and fall back to the poster — deliberately, and
+   * without pretending it is an error in the file. Used for a source that
+   * cannot be seeked at all (no byte ranges, no finite duration) and for one
+   * whose seeks are being silently dropped.
+   */
+  function markUnscrubbable(st, why) {
+    st.failedSrc = st.src;
+    releaseVideo(st);
+    if (st.chapter) st.chapter.setAttribute('data-video-state', 'unseekable');
+    if (window.console && console.info) {
+      console.info('[scroll.js] ' + (st.chapter ? st.chapter.id : 'chapter') +
+        ': showing the poster instead of the clip — ' + why + '. ' +
+        'Scroll-scrubbed video needs a host that serves HTTP byte ranges.');
+    }
+  }
+
+  /**
+   * Can this element be seeked at all? `seekable` is the browser's own answer
+   * to "which parts of this can I jump to", and it is empty when the source
+   * cannot be range-requested. Duration has to be finite too — a live or
+   * unknown-length stream has nothing to scrub across.
+   */
+  function isSeekable(v) {
+    if (!isFinite(v.duration) || v.duration <= 0) return false;
+    try {
+      return !!(v.seekable && v.seekable.length > 0);
+    } catch (err) {
+      return false;
     }
   }
 
@@ -721,6 +814,15 @@
       return;
     }
 
+    // 1b. Not at all if the source cannot be seeked. Better to find this out
+    //     before issuing anything than to discover it three dropped seeks
+    //     later. `seekable` can legitimately be empty for a moment right after
+    //     metadata arrives, so this only bites once buffering has started.
+    if (v.readyState >= 2 && !isSeekable(v)) {
+      markUnscrubbable(st, 'the source reports no seekable range');
+      return;
+    }
+
     // Never sit exactly on the duration boundary — some decoders return a
     // blank frame there and it also risks firing `ended`.
     var max = st.duration - VIDEO_FRAME_SECONDS;
@@ -747,6 +849,11 @@
     st.pending = -1;
     st.seeking = true;
     st.seekAt = Date.now();
+    // Where it was and where it was sent, for the "did it move" test in
+    // onVideoSeeked(). Recorded here because by the time `seeked` fires,
+    // `st.target` may already belong to a newer request.
+    st.seekFrom = v.currentTime;
+    st.seekTo = t;
     try {
       v.currentTime = t;
     } catch (err) {
@@ -1186,6 +1293,10 @@
           currentTime: st.el.currentTime,
           target: st.target,
           seeking: st.seeking,
+          stalls: st.stalls,
+          seekable: st.el.seekable ? st.el.seekable.length : 0,
+          scrubIn: st.scrubIn,
+          scrubOut: st.scrubOut,
           pending: st.pending,
           readyState: st.el.readyState,
           gapVh: viewportH ? st.gap / viewportH : 0,
@@ -1294,7 +1405,33 @@
       feel rubbery, because every seek has to decode forward from further
       away. Shorter and more keyframes is the direction to go, not fewer.
 
-   9. `SiteMotion.videos()` returns a plain snapshot of the scrub engine — one
+  10. DEPLOYMENT CONSTRAINT — THE HOST MUST SERVE HTTP BYTE RANGES. This one
+      belongs to whoever puts the site online, and it is the only genuinely
+      external requirement the scrub has.
+
+      Seeking a `<video>` needs random access to the file, which over HTTP
+      means the server has to answer a `Range` request with `206 Partial
+      Content`. A host that ignores `Range` and returns `200` with the whole
+      file leaves the element with an empty `seekable` range — and then, quite
+      politely, accepts every `currentTime` assignment, fires `seeked`, and
+      does not move. Nothing errors. It just silently does not work.
+
+        - Netlify, Vercel, Cloudflare Pages, GitHub Pages, S3 + CloudFront,
+          nginx and Apache all serve ranges out of the box. Nothing to do.
+        - Python's `http.server` does NOT. Neither does opening index.html
+          from the file system on some browsers. Both are fine for checking
+          layout and copy; neither can be used to judge whether the scrub
+          works, and the same is true of any "quick local preview" tool.
+
+      This file detects the condition rather than assuming it: section 4
+      declines to scrub a source whose `seekable` list is empty, and treats
+      three seeks that complete without moving the playhead as the same thing.
+      In both cases the clip is dropped, the poster takes over, and one line is
+      logged to the console explaining why. So a range-less host degrades to a
+      clean still image rather than to a frozen frame — but it is a degraded
+      page, and the fix is on the server, not here.
+
+  11. `SiteMotion.videos()` returns a plain snapshot of the scrub engine — one
       row per clip with its src, readyState, currentTime, target, seek queue
       and distance from the viewport. It is there for debugging and for the
       automated checks; it copies values out rather than exposing the live
