@@ -15,12 +15,21 @@
      3.  Site header
      4.  Journey + generic chapter
      5.  Hero chapter
-     6.  Floor plans
-     7.  Tour + form controls
-     8.  Sticky CTA
-     9.  Site footer
-     10. Focus, selection, reduced motion, print
-     11. INTEGRATION NOTES
+     6.  Services
+     7.  Why owners choose us
+     8.  Pricing
+     9.  Quote + form controls
+     10. Sticky CTA
+     11. Site footer
+     12. Focus, selection, reduced motion, print
+     13. Responsive
+     14. INTEGRATION NOTES
+
+   v3 note: this is a property MANAGEMENT COMPANY site, not a leasing site.
+   The floor-plan (`.plans__*`) and tour-form (`.tour__*`) rules are gone —
+   nothing on this page is for rent, so there is nothing to plan or tour. The
+   walkthrough sections 4 and 5 are untouched: same geometry, same handoff to
+   Motion, only the argument the copy makes has changed.
    ========================================================================== */
 
 /* -----------------------------------------------------------------------------
@@ -66,8 +75,10 @@ a:hover {
 
 /* Centred content rail used by every full-bleed section. Works for markup that
    JavaScript injects later, because it targets direct children generically. */
-.plans,
-.tour,
+.services,
+.why,
+.pricing,
+.quote,
 .site-footer {
   display: grid;
   grid-template-columns:
@@ -76,10 +87,21 @@ a:hover {
     minmax(var(--space-gutter), 1fr) [full-end];
 }
 
-.plans > *,
-.tour > *,
+.services > *,
+.why > *,
+.pricing > *,
+.quote > *,
 .site-footer > * {
   grid-column: content;
+}
+
+/* Every post-walkthrough section clears the fixed header when it is the
+   anchor target. The header CTA and the sticky CTA both aim at #quote. */
+.services,
+.why,
+.pricing,
+.quote {
+  scroll-margin-block-start: var(--header-height);
 }
 
 /* -----------------------------------------------------------------------------
@@ -114,10 +136,10 @@ main:focus {
 
 /* --- buttons ---------------------------------------------------------------
    Class-based for markup I author; element-based fallbacks further down catch
-   the button js/site.js injects into the tour form. */
+   the button js/site.js injects into the quote form. */
 
 .button,
-.tour__form button[type="submit"],
+.quote__form button[type="submit"],
 .site-header__cta {
   display: inline-flex;
   align-items: center;
@@ -139,7 +161,7 @@ main:focus {
 }
 
 .button--primary,
-.tour__form button[type="submit"] {
+.quote__form button[type="submit"] {
   background-color: var(--c-ink);
   color: var(--c-paper-invert);
   border-color: var(--c-ink);
@@ -147,7 +169,7 @@ main:focus {
 }
 
 .button--primary:hover,
-.tour__form button[type="submit"]:hover {
+.quote__form button[type="submit"]:hover {
   background-color: var(--c-accent-hover);
   border-color: var(--c-accent-hover);
   color: var(--c-paper);
@@ -164,7 +186,7 @@ main:focus {
   background-color: var(--c-accent-a12);
 }
 
-/* --- section headings (floor plans, tour) ---------------------------------- */
+/* --- section headings (services, why, pricing, quote) ---------------------- */
 
 .section__eyebrow,
 .chapter__eyebrow {
@@ -204,9 +226,14 @@ main:focus {
   line-height: var(--lh-loose);
 }
 
-.plans__intro,
-.tour__intro {
-  padding-block-end: var(--space-lg);
+/* The intro block of each post-walkthrough section. Deliberately generous:
+   this is a pitch to owners, and the whitespace above a section title is
+   doing as much work as the title. */
+.services__intro,
+.why__intro,
+.pricing__intro,
+.quote__intro {
+  padding-block-end: var(--space-xl);
 }
 
 /* --- noscript notices ------------------------------------------------------ */
@@ -244,7 +271,6 @@ main:focus {
   border-radius: var(--radius-xs);
 }
 
-.noscript-note__plans,
 .noscript-note__contact {
   display: grid;
   gap: var(--space-sm);
@@ -607,206 +633,347 @@ body.is-scrolled .site-header {
 }
 
 /* -----------------------------------------------------------------------------
-   6. Floor plans
+   6. Services
+   -----------------------------------------------------------------------------
+
+   Five to seven services, injected into [data-services] by js/site.js. Drawn
+   as an editorial index rather than a set of cards: a hairline over each entry,
+   a brass ordinal, then title / body / deliverables. Boxes would have made this
+   read like every other management company's template page; rules and numbers
+   read like a table of contents, which is what a list of services actually is.
+
+   The ordinal is a CSS counter on the grid, so it survives whatever markup
+   site.js emits and renumbers itself if a service is added or removed.
    -------------------------------------------------------------------------- */
 
-.plans {
+.services {
   padding-block: var(--space-section);
-  background-color: var(--c-card);
-  border-block: var(--hairline) solid var(--c-rule);
-  scroll-margin-block-start: var(--header-height);
+  background-color: var(--surface-page);
 }
 
-.plans__tabs {
-  display: flex;
+.services__grid {
+  display: grid;
+  gap: var(--space-xl) var(--space-lg);
+  counter-reset: service;
+}
+
+.services__grid:empty {
+  display: none;
+}
+
+/* Generic: whatever element site.js uses for a service. */
+.services__grid > * {
+  display: grid;
   gap: var(--space-2xs);
-  margin-block-end: var(--space-lg);
-  padding-block-end: 0;
-  border-block-end: var(--hairline) solid var(--c-rule);
-  /* Mobile: a single scrollable row rather than a wrapped, ragged block. */
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
+  align-content: start;
+  justify-items: start;
+  min-inline-size: 0;
+  counter-increment: service;
+  padding-block-start: var(--space-md);
+  border-block-start: var(--hairline) solid var(--c-rule);
 }
 
-.plans__tabs:empty {
-  display: none;
-}
-
-/* Below ~768px three plan names cannot fit on one line, so the row scrolls.
-   Fade the trailing edge so it reads as scrollable rather than truncated. */
-@media (max-width: 47.999rem) {
-  @supports (mask-image: linear-gradient(#000, #000)) or (-webkit-mask-image: linear-gradient(#000, #000)) {
-    .plans__tabs {
-      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
-      mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
-    }
-  }
-}
-
-/* Tabs are real <button>s injected by js/site.js — styled by element + state so
-   they inherit correctly whatever classes that markup carries. */
-.plans__tabs button {
-  flex: 0 0 auto;
-  padding: var(--space-xs) var(--space-md);
-  margin-block-end: -1px;
-  background-color: transparent;
-  border: 0;
-  border-block-end: 2px solid transparent;
-  color: var(--c-muted);
-  font-size: var(--step--1);
-  font-weight: var(--fw-medium);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
-}
-
-.plans__tabs button:hover {
-  color: var(--c-ink);
-  border-block-end-color: var(--c-rule);
-}
-
-.plans__tabs [aria-selected="true"] {
-  color: var(--c-ink);
-  border-block-end-color: var(--c-accent);
-}
-
-.plans__panels:empty {
-  display: none;
-}
-
-.plans__panels > * {
-  display: grid;
-  gap: var(--space-lg);
-  align-items: start;
-  justify-items: stretch;
-}
-
-/* The drawing is the point of this section, so it is sized to be seen whole:
-   a square that is never taller than 62svh and never wider than its column.
-   Round 1 let it run to 34rem regardless of viewport height, which pushed the
-   bottom of the plan below the fold. `object-fit: contain` then guarantees the
-   whole 800x800 artboard is inside the frame, never cropped. */
-.plans__panels img {
-  inline-size: min(100%, 34rem, 62svh);
-  block-size: auto;
-  aspect-ratio: 1 / 1;
-  object-fit: contain;
-  justify-self: start;
-  padding: var(--space-md);
-  background-color: var(--c-paper);
-  border: var(--hairline) solid var(--c-rule);
-  border-radius: var(--radius-md);
-}
-
-.plans__panels h3 {
-  font-size: var(--step-2);
-}
-
-.plans__panels p {
-  color: var(--c-muted);
-  max-inline-size: var(--width-text);
-}
-
-/* Spec lists, whichever shape site.js builds them in. */
-.plans__panels dl {
-  display: grid;
-  margin-block-start: var(--space-md);
-}
-
-.plans__panels dt {
-  color: var(--c-muted);
-  font-size: var(--step--2);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-}
-
-.plans__panels dd {
-  margin: 0 0 var(--space-sm);
-  padding-block-end: var(--space-sm);
-  border-block-end: var(--hairline) solid var(--c-rule);
+.services__grid > *::before {
+  content: counter(service, decimal-leading-zero);
+  color: var(--c-accent-deep);
   font-family: var(--font-display);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-caps);
+  line-height: 1;
+}
+
+/* NB: site.js calls the ARTICLE `.services__item` and the list row
+   `.services__list-item` — the opposite way round to the obvious guess. The
+   dash rule below is therefore scoped to `.services__list-item`, never to
+   `.services__item`, or the brass dash would replace the ordinal on the card
+   itself (a `::before` can only carry one `content`).
+
+   No measure cap at this width on purpose: one column at 390px is already
+   narrower than the cap would be, and capping twice makes a two-word title
+   wrap for no reason. The cap arrives with the multi-column grid at 48rem. */
+.services__grid h3,
+.services__grid .services__name {
+  margin-block-start: var(--space-3xs);
+  color: var(--c-ink);
   font-size: var(--step-1);
   line-height: var(--lh-snug);
 }
 
-.plans__panels ul {
-  display: grid;
-  gap: 0;
-  margin-block-start: var(--space-md);
-  list-style: none;
-  padding: 0;
-}
-
-.plans__panels li {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding-block: var(--space-xs);
-  border-block-end: var(--hairline) solid var(--c-rule);
-}
-
-/* --- the exact shape js/site.js builds ------------------------------------
-   Round 2: site.js restructured a panel into a drawing with a caption on one
-   side and a comparison card on the other. */
-
-.plans__panels .plans__figure {
-  display: grid;
-  gap: var(--space-2xs);
-  justify-items: start;
-  margin: 0;
-  min-inline-size: 0;
-}
-
-.plans__panels .plans__caption {
+.services__grid p,
+.services__grid .services__body {
   color: var(--c-muted);
-  font-size: var(--step--1);
-  line-height: 1.45;
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+  max-inline-size: 42ch;
 }
 
-.plans__panels .plans__caption-text {
-  font-size: inherit;
-}
-
-.plans__panels .plans__facts {
+/* The concrete deliverables under each service. */
+.services__grid ul,
+.services__grid .services__list {
   display: grid;
-  gap: var(--space-md);
+  gap: var(--space-3xs);
+  margin-block-start: var(--space-2xs);
+  padding: 0;
+  list-style: none;
+}
+
+.services__grid li,
+.services__grid .services__list-item {
+  position: relative;
+  padding-inline-start: 1.35rem;
+  color: var(--c-ink);
+  font-size: var(--step--1);
+  line-height: 1.55;
+}
+
+/* A brass dash instead of a bullet — the accent's whole job in this section. */
+.services__grid li::before,
+.services__grid .services__list-item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.7em;
+  inset-inline-start: 0;
+  inline-size: 0.6rem;
+  block-size: 1px;
+  background-color: var(--c-accent);
+}
+
+/* -----------------------------------------------------------------------------
+   7. Why owners choose us
+   -----------------------------------------------------------------------------
+
+   The one dark band between the walkthrough and the commercial sections. It
+   exists to change the temperature of the page: eight scenes, a bright index
+   of services, then a short, quiet, authoritative statement — then pricing.
+
+   Three or four entries from [data-why], each optionally carrying a bracketed
+   stat. The stat is the only large brass thing on the page after the hero, so
+   it is capped by --step-stat (tokens §3) rather than a raw display step: the
+   real values are unknown and may be phrases, not numbers.
+   -------------------------------------------------------------------------- */
+
+.why {
+  padding-block: var(--space-section);
+  background-color: var(--surface-dark);
+  color: var(--text-on-dark);
+}
+
+.why .section__eyebrow {
+  color: var(--c-accent-light);
+}
+
+.why .section__eyebrow::before {
+  background-color: var(--c-accent-light);
+}
+
+.why .section__title {
+  color: var(--text-on-dark);
+}
+
+.why .section__lede {
+  color: var(--text-on-dark-secondary);
+}
+
+.why__grid {
+  display: grid;
+  gap: var(--space-xl) var(--space-lg);
+}
+
+.why__grid:empty {
+  display: none;
+}
+
+.why__grid > * {
+  display: grid;
+  gap: var(--space-xs);
   align-content: start;
   justify-items: start;
   min-inline-size: 0;
   padding-block-start: var(--space-md);
-  border-block-start: 2px solid var(--c-accent);
+  border-block-start: var(--hairline) solid var(--c-rule-invert);
 }
 
-/* Name and availability on one baseline, name first and allowed to wrap; the
-   badge holds its own line height so the two never look kerned apart. */
-.plans__panels .plans__facts-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2xs) var(--space-md);
-  inline-size: 100%;
+/* The stat, however site.js marks it up. Class first, then the plausible
+   element shapes — a <strong>, a <b>, or a definition list. */
+.why__grid .why__stat,
+.why__grid strong,
+.why__grid b,
+.why__grid dt {
+  color: var(--c-accent-light);
+  font-family: var(--font-display);
+  font-size: var(--step-stat);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+  text-wrap: balance;
 }
 
-.plans__panels .plans__name {
-  font-size: var(--step-2);
+/* Measure caps land with the multi-column grid at 48rem, not here — a single
+   350px column is already the constraint, and a second one only forces
+   "[1 point of contact]" onto two lines with half the row still empty. */
+.why__grid h3,
+.why__grid .why__name {
+  margin-block-start: var(--space-3xs);
+  color: var(--text-on-dark);
+  font-size: var(--step-1);
   line-height: var(--lh-snug);
-  margin: 0;
 }
 
-/* The `.plans__panels p` rule above is also one class, and it comes first, so
-   the badge used to lose the cascade and render muted grey. Scoped by parent
-   to win it back — brass on a brass tint, at the deeper step so a --step--2
-   label still clears 4.5:1. */
-.plans__panels .plans__facts-head .plans__badge {
-  align-self: baseline;
+.why__grid p,
+.why__grid dd,
+.why__grid .why__body {
+  margin: 0;
+  color: var(--text-on-dark-secondary);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+  max-inline-size: 40ch;
+}
+
+.why__grid a {
+  color: var(--text-on-dark);
+  text-decoration-color: var(--c-accent);
+}
+
+/* -----------------------------------------------------------------------------
+   8. Pricing
+   -----------------------------------------------------------------------------
+
+   Three parts, three hooks: the fee model in a sentence or two, the tiers, and
+   the small print. Exactly one tier is featured, and it has to read as featured
+   with the colour taken away — so the distinction is carried by border WEIGHT
+   (a 4px cap rule against 2px), ELEVATION (a real shadow against none) and SIZE
+   (it grows past its neighbours at >= 62rem). Brass is confirmation, never the
+   signal on its own.
+   -------------------------------------------------------------------------- */
+
+.pricing {
+  padding-block: var(--space-section);
+  background-color: var(--c-card);
+  border-block: var(--hairline) solid var(--c-rule);
+}
+
+/* How fees work. Set as a standfirst — serif, one step up, ink rather than
+   muted — because it is the answer to the first question an owner asks. The
+   leading is looser than a heading's: the real copy runs to a paragraph, not
+   a line, and --lh-snug at this size closes it up into a slab. At >= 62rem it
+   moves beside the section title (§13) instead of under it. */
+.pricing__model {
+  max-inline-size: 54ch;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: 1.42;
+}
+
+.pricing__model:empty {
+  display: none;
+}
+
+.pricing__model > * + * {
+  margin-block-start: var(--space-sm);
+}
+
+.pricing__tiers {
+  display: grid;
+  gap: var(--space-md);
+  align-items: stretch;
+  margin-block-start: var(--space-2xl);
+}
+
+.pricing__tiers:empty {
+  display: none;
+}
+
+.pricing__tiers > * {
+  position: relative;
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+  justify-items: start;
+  min-inline-size: 0;
+  padding: var(--space-lg);
+  background-color: var(--c-paper);
+  border: var(--hairline) solid var(--c-rule);
+  border-block-start: 2px solid var(--c-rule);
+  border-radius: var(--radius-md);
+}
+
+/* The featured tier. `[data-featured]` is matched only in its true forms so a
+   `data-featured="false"` sibling cannot accidentally claim the treatment. */
+.pricing__tiers > .pricing__tier--featured,
+.pricing__tiers > .is-featured,
+.pricing__tiers > [data-featured="true"],
+.pricing__tiers > [data-featured=""] {
+  border-color: var(--c-accent-a30);
+  border-block-start: 4px solid var(--c-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.pricing__tiers h3,
+.pricing__tiers .pricing__tier-name,
+.pricing__tiers .pricing__name {
+  color: var(--c-ink);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+}
+
+/* site.js builds the rate as ONE <p class="pricing__rate"> holding
+   <span class="pricing__rate-value"> + a text node + <span
+   class="pricing__rate-note">. So the display treatment goes on the
+   paragraph and the note takes itself back out of it on the line below —
+   which also covers the simpler shape where the note is a sibling <p>. */
+.pricing__tiers .pricing__rate,
+.pricing__tiers .pricing__rate-value,
+.pricing__tiers .pricing__tier-rate {
+  margin: 0;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+}
+
+.pricing__tiers .pricing__rate-note,
+.pricing__tiers .pricing__tier-rate-note {
+  display: block;
+  margin-block-start: var(--space-3xs);
+  color: var(--c-muted);
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-body);
+  line-height: 1.45;
+}
+
+.pricing__tiers p,
+.pricing__tiers .pricing__summary {
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+  max-inline-size: 34ch;
+}
+
+/* A "most chosen" style chip, if site.js emits one. Brass on a brass tint at
+   the deeper step, so a --step--2 label still clears 4.5:1.
+
+   Taken OUT OF FLOW and hung astride the tier's cap rule. In flow it pushed
+   the featured tier's name and rate a row lower than its neighbours', so the
+   three rates — the one thing an owner is here to compare — no longer shared
+   a baseline. Out of flow, they do. */
+.pricing__tiers .pricing__badge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--space-lg);
+  transform: translateY(-50%);
+  /* Never wider than the card, however long the label turns out to be. */
+  max-inline-size: calc(100% - var(--space-lg) * 2);
   padding: 0.3rem 0.8rem;
-  background-color: var(--c-accent-a12);
+  /* Opaque, built from tokens: the 12% brass wash composited over paper by a
+     flat gradient rather than left translucent. Straddling the card edge, a
+     translucent chip would be two different colours above and below the rule. */
+  background-color: var(--c-paper);
+  background-image: linear-gradient(var(--c-accent-a12), var(--c-accent-a12));
   border: var(--hairline) solid var(--c-accent-a30);
   border-radius: var(--radius-pill);
   color: var(--c-accent-deeper);
@@ -815,132 +982,107 @@ body.is-scrolled .site-header {
   letter-spacing: var(--ls-caps);
   text-transform: uppercase;
   line-height: 1.4;
-  white-space: nowrap;
-  max-inline-size: none;
+  text-wrap: balance;
 }
 
-.plans__panels .plans__note {
+.pricing__tiers ul,
+.pricing__tiers .pricing__includes {
+  display: grid;
+  gap: var(--space-3xs);
+  inline-size: 100%;
+  margin-block-start: var(--space-2xs);
+  padding-block-start: var(--space-md);
+  border-block-start: var(--hairline) solid var(--c-rule);
+  padding-inline: 0;
+  list-style: none;
+}
+
+.pricing__tiers li,
+.pricing__tiers .pricing__includes-item {
+  position: relative;
+  padding-inline-start: 1.35rem;
+  color: var(--c-ink);
+  font-size: var(--step--1);
+  line-height: 1.55;
+}
+
+.pricing__tiers li::before,
+.pricing__tiers .pricing__includes-item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.7em;
+  inset-inline-start: 0;
+  inline-size: 0.6rem;
+  block-size: 1px;
+  background-color: var(--c-accent);
+}
+
+/* --- the small print -------------------------------------------------------
+   Leasing fee, setup fee, notice period. Small, but it is the part an owner
+   reads twice, so it gets a real measure and a rule of its own rather than
+   being dropped at the bottom as a run-on. */
+
+.pricing__notes {
+  margin-block-start: var(--space-2xl);
+  padding-block-start: var(--space-lg);
+  border-block-start: var(--hairline) solid var(--c-rule);
   color: var(--c-muted);
   font-size: var(--step--1);
   line-height: var(--lh-loose);
-  max-inline-size: 40ch;
 }
 
-/* Rent and size are what anyone actually compares, so they are the biggest
-   thing in the panel and they sit side by side as soon as there is room. */
-.plans__panels .plans__keyfigures {
+.pricing__notes:empty {
+  display: none;
+}
+
+.pricing__notes ul,
+.pricing__notes ol,
+.pricing__notes .pricing__notes-list {
   display: grid;
-  gap: var(--space-md);
-  inline-size: 100%;
-  margin-block-start: 0;
-  padding-block: var(--space-sm);
-  border-block: var(--hairline) solid var(--c-rule);
-}
-
-.plans__panels .plans__keyfigure {
-  display: grid;
-  gap: var(--space-3xs);
-  min-inline-size: 0;
-}
-
-.plans__panels .plans__keyfigure-label {
-  color: var(--c-muted);
-  font-size: var(--step--2);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-}
-
-.plans__panels .plans__keyfigure-value {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.35em;
-  margin: 0;
+  gap: var(--space-2xs) var(--space-xl);
   padding: 0;
-  border: 0;
-  color: var(--c-ink);
-  font-family: var(--font-display);
-  line-height: var(--lh-snug);
+  list-style: none;
 }
 
-.plans__panels .plans__rent,
-.plans__panels .plans__size {
-  font-size: var(--step-2);
-  letter-spacing: var(--ls-heading);
+.pricing__notes li,
+.pricing__notes .pricing__notes-item {
+  position: relative;
+  padding-inline-start: 1.35rem;
+  max-inline-size: 52ch;
 }
 
-.plans__panels .plans__keyfigure-unit {
-  color: var(--c-muted);
-  font-family: var(--font-body);
-  font-size: var(--step--1);
-  letter-spacing: var(--ls-body);
+.pricing__notes li::before,
+.pricing__notes .pricing__notes-item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.85em;
+  inset-inline-start: 0;
+  inline-size: 0.6rem;
+  block-size: 1px;
+  background-color: var(--c-accent-a30);
 }
 
-.plans__panels .plans__specs {
-  display: grid;
-  gap: var(--space-2xs);
-  inline-size: 100%;
-  margin-block-start: 0;
-}
-
-.plans__panels .plans__specrow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding-block: var(--space-3xs);
-}
-
-.plans__panels .plans__specrow-label {
-  color: var(--c-muted);
-  font-size: var(--step--1);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-}
-
-.plans__panels .plans__specrow-value {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  color: var(--c-ink);
-  font-family: var(--font-body);
-  font-size: var(--step--1);
-  line-height: 1.5;
-}
-
-.plans__cta {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0.7rem var(--space-lg);
-  border: var(--hairline) solid var(--c-accent-a30);
-  border-radius: var(--radius-pill);
-  color: var(--c-accent-deep);
-  font-size: var(--step--1);
-  font-weight: var(--fw-medium);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: background-color var(--dur-base) var(--ease-out),
-              border-color var(--dur-base) var(--ease-out);
-}
-
-.plans__cta:hover {
-  background-color: var(--c-accent-a12);
-  border-color: var(--c-accent);
+.pricing__notes p {
+  max-inline-size: 62ch;
 }
 
 /* -----------------------------------------------------------------------------
-   7. Tour + form controls
+   9. Quote + form controls
+   -----------------------------------------------------------------------------
+
+   Seven fields — name, contact, address, units, property type, situation and
+   an optional message — which is a lot to look at in one column. Two things
+   keep it feeling short: a two-column grid from 48rem up, so the seven fields
+   read as four rows, and only the message spanning the full width. The unit
+   count is capped narrow because a three-digit number in a 24rem box looks
+   like a form that wants more than it is asking for.
    -------------------------------------------------------------------------- */
 
-.tour {
+.quote {
   padding-block: var(--space-section);
-  scroll-margin-block-start: var(--header-height);
 }
 
-.tour__form {
+.quote__form {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-md);
@@ -952,22 +1094,31 @@ body.is-scrolled .site-header {
   border-radius: var(--radius-lg);
 }
 
-.tour__form:empty {
+.quote__form:empty {
   display: none;
 }
 
 /* Field wrappers, whatever element site.js uses. */
-.tour__form > div,
-.tour__form > p,
-.tour__form > fieldset,
-.tour__form .field {
+.quote__form > div,
+.quote__form > p,
+.quote__form > fieldset,
+.quote__form .field,
+.quote__form .quote__field,
+.quote__form .tour__field {
   display: grid;
   gap: var(--space-3xs);
   min-inline-size: 0;
 }
 
-.tour__form label,
-.tour__details dt {
+.quote__form legend {
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+}
+
+.quote__form label,
+.quote__details dt {
   color: var(--c-muted);
   font-size: var(--step--1);
   font-weight: var(--fw-medium);
@@ -976,9 +1127,9 @@ body.is-scrolled .site-header {
   line-height: 1.4;
 }
 
-.tour__form input,
-.tour__form select,
-.tour__form textarea {
+.quote__form input,
+.quote__form select,
+.quote__form textarea {
   inline-size: 100%;
   min-block-size: 2.9rem;
   padding: 0.7rem 0.9rem;
@@ -994,12 +1145,18 @@ body.is-scrolled .site-header {
               box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.tour__form textarea {
-  min-block-size: 7rem;
+.quote__form textarea {
+  min-block-size: 6.5rem;
   resize: vertical;
 }
 
-.tour__form select {
+/* A unit count is at most four characters. Left at 100% it reads as a field
+   expecting an essay. */
+.quote__form input[type="number"] {
+  max-inline-size: 12rem;
+}
+
+.quote__form select {
   appearance: none;
   padding-inline-end: 2.5rem;
   background-image:
@@ -1012,59 +1169,55 @@ body.is-scrolled .site-header {
   background-repeat: no-repeat;
 }
 
-.tour__form input:hover,
-.tour__form select:hover,
-.tour__form textarea:hover {
+.quote__form input:hover,
+.quote__form select:hover,
+.quote__form textarea:hover {
   border-color: var(--c-ink);
 }
 
-.tour__form ::placeholder {
+.quote__form ::placeholder {
   color: var(--c-muted);
   opacity: 1;
 }
 
 /* Inline validation, however site.js flags it. */
-.tour__form [aria-invalid="true"] {
+.quote__form [aria-invalid="true"] {
   border-color: var(--c-danger);
   box-shadow: 0 0 0 1px var(--c-danger);
 }
 
-.tour__form [data-error],
-.tour__form .field__error,
-.tour__form .error {
+.quote__form [data-error],
+.quote__form .field__error,
+.quote__form .error {
   color: var(--c-danger);
   font-size: var(--step--1);
   line-height: 1.4;
 }
 
-.tour__form [data-error]:empty,
-.tour__form .field__error:empty {
+.quote__form [data-error]:empty,
+.quote__form .field__error:empty {
   display: none;
 }
 
-.tour__form button[type="submit"] {
+.quote__form button[type="submit"] {
   justify-self: start;
   grid-column: 1 / -1;
   margin-block-start: var(--space-2xs);
 }
 
-/* The "not yet connected" confirmation carries the phone, email and hours —
-   with no backend wired, those links ARE the fallback, so they are set at
-   reading size and given the accent, not left as body-coloured runs of text. */
-.tour__confirmation-tel,
-.tour__confirmation-mail {
-  color: var(--c-accent-deep);
-  font-weight: var(--fw-medium);
-  white-space: nowrap;
+/* The message is the only field that needs the whole width. Isolated in its
+   own rule so a browser without :has() drops this and nothing else. */
+.quote__form > *:has(textarea) {
+  grid-column: 1 / -1;
 }
 
-.tour__confirmation-hours {
-  color: var(--c-muted);
+.quote__form > *:has(textarea) textarea {
+  max-inline-size: 44rem;
 }
 
 /* Success / "not yet connected" confirmation from site.js. */
-.tour__form [role="status"],
-.tour__form [data-form-status] {
+.quote__form [role="status"],
+.quote__form [data-form-status] {
   grid-column: 1 / -1;
   padding: var(--space-sm) var(--space-md);
   background-color: var(--c-paper);
@@ -1074,34 +1227,96 @@ body.is-scrolled .site-header {
   font-size: var(--step--1);
 }
 
-.tour__form [role="status"]:empty,
-.tour__form [data-form-status]:empty {
+.quote__form [role="status"]:empty,
+.quote__form [data-form-status]:empty {
   display: none;
   padding: 0;
   border: 0;
 }
 
-/* --- the exact shape js/site.js builds ------------------------------------- */
+/* site.js builds the confirmation as a div[role=status] holding a title, a
+   note, a contact line and the hours. It is styled by the [role="status"]
+   rule above; these give it its internal rhythm. */
+.quote__form .quote__confirmation > * + * {
+  margin-block-start: var(--space-2xs);
+}
 
-/* Explicit rows so a field WITH a hint still lines its input up with the
-   fields that have none. Reading order in the DOM is label → hint → input;
-   visually the hint sits under the control, which is the commoner pattern. */
-.tour__field {
-  display: grid;
+.quote__form .quote__confirmation-title {
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-heading);
+}
+
+.quote__form .quote__confirmation-note {
+  color: var(--c-ink);
+  line-height: var(--lh-loose);
+  max-inline-size: 72ch;
+}
+
+.quote__form .quote__confirmation-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  margin-block-start: var(--space-xs);
+}
+
+/* Nothing is sent anywhere, so the phone and email inside the confirmation
+   ARE the fallback — set at reading size and given the accent rather than
+   left as body-coloured runs of text. */
+.quote__form .quote__confirmation-tel,
+.quote__form .quote__confirmation-mail,
+.quote__form .tour__confirmation-tel,
+.quote__form .tour__confirmation-mail {
+  color: var(--c-accent-deep);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+.quote__form .quote__confirmation-hours,
+.quote__form .tour__confirmation-hours {
+  color: var(--c-muted);
+}
+
+/* Only rendered when index.html does NOT bind quote.intro in the section
+   header — site.js checks, so the sentence can never appear twice. Styled
+   anyway, because "never" lasts until someone edits the markup. */
+.quote__form .quote__intro-text {
+  grid-column: 1 / -1;
+  margin-block-end: var(--space-2xs);
+  color: var(--c-muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-loose);
+  max-inline-size: 60ch;
+}
+
+/* --- the shape js/site.js is expected to build ------------------------------
+   Explicit rows so a field WITH a hint still lines its input up with the
+   fields that have none. Reading order in the DOM is label -> hint -> input;
+   visually the hint sits under the control, which is the commoner pattern.
+   The `.tour__*` aliases are deliberate: v2's site.js used that prefix for the
+   same parts, and if v3 carries them over the form still lands correctly. */
+
+.quote__form .quote__field,
+.quote__form .tour__field {
   grid-template-rows: auto auto auto auto;
   gap: var(--space-3xs);
 }
 
-.tour__field .tour__label {
+.quote__form .quote__label,
+.quote__form .tour__label {
   grid-row: 1;
 }
 
-.tour__field .tour__input {
+.quote__form .quote__input,
+.quote__form .tour__input {
   grid-row: 2;
   margin-block-start: var(--space-3xs);
 }
 
-.tour__field .tour__hint {
+.quote__form .quote__hint,
+.quote__form .tour__hint {
   grid-row: 3;
   color: var(--c-muted);
   font-size: var(--step--1);
@@ -1110,7 +1325,8 @@ body.is-scrolled .site-header {
   line-height: 1.45;
 }
 
-.tour__field .tour__error {
+.quote__form .quote__error,
+.quote__form .tour__error {
   grid-row: 4;
   color: var(--c-danger);
   font-size: var(--step--1);
@@ -1118,39 +1334,43 @@ body.is-scrolled .site-header {
   line-height: 1.45;
 }
 
-.tour__submit {
+.quote__form .quote__submit,
+.quote__form .tour__submit {
   grid-column: 1 / -1;
   justify-self: start;
   margin-block-start: var(--space-2xs);
 }
 
-/* --- leasing office details ------------------------------------------------ */
+/* --- how to reach a person -------------------------------------------------
+   Phone, email, hours, address. With no backend wired, this block is the only
+   route that actually works, so it is not filed away as fine print. */
 
-.tour__details:empty {
+.quote__details:empty {
   display: none;
 }
 
-.tour__details {
+.quote__details {
+  display: grid;
+  gap: var(--space-md) var(--space-xl);
   margin-block-start: var(--space-xl);
   padding-block-start: var(--space-lg);
   border-block-start: var(--hairline) solid var(--c-rule);
-  display: grid;
-  gap: var(--space-md) var(--space-xl);
   color: var(--c-muted);
   font-size: var(--step--1);
   line-height: var(--lh-loose);
 }
 
-.tour__details a {
+.quote__details a {
   color: var(--c-accent-deep);
 }
 
-.tour__detail {
+.quote__detail {
   margin: 0;
 }
 
 /* The phone number is the highest-intent thing on the page after the form. */
-.tour__detail--phone a {
+.quote__detail--phone a,
+.quote__details .quote__phone {
   color: var(--c-ink);
   font-family: var(--font-display);
   font-size: var(--step-2);
@@ -1160,16 +1380,18 @@ body.is-scrolled .site-header {
   border-block-end: 1px solid var(--c-accent-a30);
 }
 
-.tour__detail--phone a:hover {
+.quote__detail--phone a:hover,
+.quote__details .quote__phone:hover {
   border-block-end-color: var(--c-accent);
 }
 
-.tour__detail--address,
-.tour__detail--hours {
+.quote__detail--address,
+.quote__detail--hours,
+.quote__detail--area {
   color: var(--c-muted);
 }
 
-.tour__details dd {
+.quote__details dd {
   margin: 0;
   color: var(--c-ink);
   font-family: var(--font-display);
@@ -1177,12 +1399,12 @@ body.is-scrolled .site-header {
   line-height: var(--lh-snug);
 }
 
-.tour__details address {
+.quote__details address {
   font-style: normal;
 }
 
 /* -----------------------------------------------------------------------------
-   8. Sticky CTA
+   10. Sticky CTA
    Hidden by default; revealed only once Motion puts .is-scrolled on <body>.
    -------------------------------------------------------------------------- */
 
@@ -1246,7 +1468,7 @@ body.is-scrolled .sticky-cta {
 }
 
 /* -----------------------------------------------------------------------------
-   9. Site footer
+   11. Site footer
    -------------------------------------------------------------------------- */
 
 .site-footer {
@@ -1307,8 +1529,23 @@ body.is-scrolled .sticky-cta {
   text-transform: uppercase;
 }
 
-/* Scoped past the generic `.site-footer ul`, which is one class + one element
-   and would otherwise win the gap back. */
+/* site.js writes the disclosure as one paragraph under the heading. The brass
+   rule beside it is the same weight the featured pricing tier gets: this is a
+   statement about the business, not a caption. */
+.site-footer__honesty-body {
+  margin-block-start: var(--space-md);
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--c-accent);
+  max-inline-size: 68ch;
+  color: var(--text-on-dark);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+}
+
+/* Kept for the list shape: if the disclosure is ever split into separate
+   claims again, they inherit the same weight rather than falling back to
+   fine print. Scoped past the generic `.site-footer ul`, which is one class
+   plus one element and would otherwise win the gap back. */
 .site-footer .site-footer__honesty-list {
   display: grid;
   gap: var(--space-sm);
@@ -1318,6 +1555,8 @@ body.is-scrolled .sticky-cta {
 }
 
 .site-footer__honesty-item {
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--c-rule-invert);
   max-inline-size: 68ch;
   color: var(--text-on-dark);
   font-size: var(--step--1);
@@ -1325,13 +1564,7 @@ body.is-scrolled .sticky-cta {
 }
 
 .site-footer__honesty-item--footage {
-  padding-inline-start: var(--space-md);
-  border-inline-start: 2px solid var(--c-accent);
-}
-
-.site-footer__honesty-item--stills {
-  padding-inline-start: var(--space-md);
-  border-inline-start: 2px solid var(--c-rule-invert);
+  border-inline-start-color: var(--c-accent);
 }
 
 .site-footer__equal-housing {
@@ -1389,7 +1622,7 @@ body.is-scrolled .sticky-cta {
 }
 
 /* -----------------------------------------------------------------------------
-   10. Focus, selection, reduced motion, print
+   12. Focus, selection, reduced motion, print
    -------------------------------------------------------------------------- */
 
 :focus-visible {
@@ -1398,15 +1631,18 @@ body.is-scrolled .sticky-cta {
   border-radius: var(--radius-xs);
 }
 
+/* On the dark bands the deep-brass ring is nearly invisible; the raw accent
+   is 6.7:1 on ink, which is what a focus ring needs to be. */
 .site-footer :focus-visible,
+.why :focus-visible,
 .sticky-cta:focus-visible,
 .chapter.chapter--hero .chapter__media :focus-visible {
   outline-color: var(--c-accent);
 }
 
-.tour__form input:focus-visible,
-.tour__form select:focus-visible,
-.tour__form textarea:focus-visible {
+.quote__form input:focus-visible,
+.quote__form select:focus-visible,
+.quote__form textarea:focus-visible {
   outline-offset: 1px;
   border-color: var(--c-focus);
 }
@@ -1439,11 +1675,18 @@ body.is-scrolled .sticky-cta {
   }
 
   .chapter,
-  .plans,
-  .tour {
+  .services,
+  .why,
+  .pricing,
+  .quote {
     min-block-size: auto;
     padding-block: var(--space-lg);
     break-inside: avoid;
+  }
+
+  .why {
+    background: none;
+    color: #000;
   }
 
   .site-footer {
@@ -1453,55 +1696,66 @@ body.is-scrolled .sticky-cta {
 }
 
 /* -----------------------------------------------------------------------------
-   11. Responsive — mobile-first; these are the only breakpoints
+   13. Responsive — mobile-first; these are the only breakpoints
    -------------------------------------------------------------------------- */
 
 /* Large phone / small tablet. */
 @media (min-width: 34rem) {
-  /* Rent beside size: the two numbers anyone is actually comparing, on one
-     line, so a plan can be read at a glance without scrolling. */
-  .plans__panels .plans__keyfigures {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-lg);
-  }
-
-  .plans__panels .plans__rent,
-  .plans__panels .plans__size {
-    font-size: var(--step-3);
-  }
-
-  .tour__form {
+  .quote__form {
     padding: var(--space-xl);
   }
 
-  .tour__details {
+  .quote__details {
     grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   }
 }
 
-/* Tablet: floor-plan panels go side by side. */
+/* Tablet. Services and reasons pair up; the quote form goes two-up, which is
+   what stops seven fields reading as a long list. */
 @media (min-width: 48rem) {
-  .plans__panels > * {
-    /* Drawing left, facts right, both hung from the same top line. Round 1
-       centred the facts column against a very tall drawing, which is what made
-       it look like it was floating on its own. */
-    /* The drawing's column is sized to the drawing's own cap rather than to a
-       fraction, so there is no dead space between the plan and the card when
-       the square is height-limited on a short screen. */
-    grid-template-columns: minmax(0, 34rem) minmax(15rem, 1fr);
-    gap: var(--space-xl);
-    align-items: start;
+  .services__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2xl) var(--space-xl);
   }
 
-  .plans__panels .plans__facts {
-    padding: var(--space-lg);
-    background-color: var(--c-paper);
-    border: var(--hairline) solid var(--c-rule);
-    border-block-start: 2px solid var(--c-accent);
-    border-radius: var(--radius-md);
+  .why__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2xl) var(--space-xl);
   }
 
-  .tour__form {
+  /* Measure caps, now that the columns are narrow enough for a long line to
+     look like a mistake rather than a paragraph. */
+  .services__grid h3,
+  .services__grid .services__name {
+    max-inline-size: 22ch;
+  }
+
+  .why__grid .why__stat,
+  .why__grid strong,
+  .why__grid b,
+  .why__grid dt {
+    max-inline-size: 14ch;
+  }
+
+  .why__grid h3,
+  .why__grid .why__name {
+    max-inline-size: 22ch;
+  }
+
+  /* Three tiers do not fit across a tablet, so they fall to 2 + 1 rather than
+     being squeezed to a width where the rate has to wrap. */
+  .pricing__tiers {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .pricing__notes ul,
+  .pricing__notes ol,
+  .pricing__notes .pricing__notes-list {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+
+  .quote__form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-md) var(--space-lg);
   }
@@ -1532,18 +1786,104 @@ body.is-scrolled .sticky-cta {
     max-inline-size: min(100%, 46rem);
   }
 
-  .plans__intro,
-  .tour__intro {
-    padding-block-end: var(--space-lg);
-  }
-
   .section__title {
     font-size: var(--step-4);
   }
 
-  .tour__form {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-inline-size: 52rem;
+  .services__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2xl) var(--space-xl);
+  }
+
+  /* auto-fit, so three reasons sit as three and four sit as four rather than
+     leaving a hole in a fixed track count. */
+  .why__grid {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--space-xl);
+  }
+
+  /* Section title on the left, the fee model beside it on the right, their
+     baselines hung from the same bottom line. Under the title the paragraph
+     was a ten-line column with the other half of the page empty beside it. */
+  .pricing {
+    grid-template-columns:
+      [full-start] minmax(var(--space-gutter), 1fr)
+      [content-start] minmax(0, calc((var(--width-page) - var(--space-2xl)) * 0.45)) [lead-end]
+      var(--space-2xl)
+      [model-start] minmax(0, calc((var(--width-page) - var(--space-2xl)) * 0.55)) [content-end]
+      minmax(var(--space-gutter), 1fr) [full-end];
+  }
+
+  .pricing__intro {
+    grid-column: content-start / lead-end;
+    grid-row: 1;
+    padding-block-end: 0;
+  }
+
+  .pricing__model {
+    grid-column: model-start / content-end;
+    grid-row: 1;
+    align-self: end;
+    max-inline-size: none;
+  }
+
+  .pricing__tiers {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-lg);
+    align-items: stretch;
+    margin-block-start: var(--space-3xl);
+  }
+
+  /* The featured tier grows PAST its neighbours — the third of the three
+     non-colour cues, after border weight and elevation. The negative margin
+     is absorbed by the section's own padding, so nothing overflows. */
+  .pricing__tiers > .pricing__tier--featured,
+  .pricing__tiers > .is-featured,
+  .pricing__tiers > [data-featured="true"],
+  .pricing__tiers > [data-featured=""] {
+    margin-block: calc(var(--space-md) * -1);
+    padding-block: calc(var(--space-lg) + var(--space-md));
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* The quote section splits: the ask and the contact details on the left,
+     the form itself on the right. The two columns plus the gap are subtracted
+     from --width-page, so the pair still line up with every section above.
+
+     Conditional on there actually BEING a form. With JavaScript off the form
+     and the details block are both `:empty` and hidden, and a two-column
+     template would leave the heading marooned in a 24rem rail beside an empty
+     half-page with the noscript fallback stranded below it. `:has()` keeps
+     the split for the case it was designed for; everything else — no JS, no
+     `:has()` support — gets the single-column rail, which is correct there. */
+  .quote:has([data-quote-form]:not(:empty)) {
+    grid-template-columns:
+      [full-start] minmax(var(--space-gutter), 1fr)
+      [content-start] minmax(0, var(--width-aside)) [aside-end]
+      var(--space-2xl)
+      [main-start] minmax(0, calc(var(--width-page) - var(--width-aside) - var(--space-2xl))) [content-end]
+      minmax(var(--space-gutter), 1fr) [full-end];
+    align-items: start;
+    row-gap: var(--space-xl);
+  }
+
+  .quote:has([data-quote-form]:not(:empty)) .quote__intro {
+    grid-column: content-start / aside-end;
+    grid-row: 1;
+    padding-block-end: 0;
+  }
+
+  .quote:has([data-quote-form]:not(:empty)) .quote__form {
+    grid-column: main-start / content-end;
+    grid-row: 1 / span 2;
+    max-inline-size: none;
+  }
+
+  .quote:has([data-quote-form]:not(:empty)) .quote__details {
+    grid-column: content-start / aside-end;
+    grid-row: 2;
+    margin-block-start: 0;
+    border-block-start: 2px solid var(--c-accent);
   }
 
   .sticky-cta {
@@ -1557,84 +1897,106 @@ body.is-scrolled .sticky-cta {
 }
 
 /* -----------------------------------------------------------------------------
-   INTEGRATION NOTE (Structure → integrator)
+   14. INTEGRATION NOTE (Structure -> integrator)   [v3 — management company]
    -----------------------------------------------------------------------------
 
    1. NO-JS COPY FALLBACKS. The DOM contract shows the [data-bind] elements
       empty, but the non-negotiables also require the page to be readable with
       JavaScript disabled. To satisfy both, index.html ships bracketed
       placeholder text INSIDE each [data-bind] element. js/site.js overwrites
-      it via textContent, so with JS on the values in data/property.js always
+      it via textContent, so with JS on the values in data/company.js always
       win and nothing is duplicated at runtime. If site.js ever switches from
       textContent to "only fill when empty", these fallbacks must be stripped
-      from index.html or the property data will be ignored.
+      from index.html or the company data will be ignored.
 
    2. PLACEHOLDER CONTACT DETAILS ARE HARDCODED IN THREE NOSCRIPT BLOCKS
-      (#tour, #floorplans, footer): [(555) 555-0100] as tel:+15555550100 and
-      [leasing@example.com]. These cannot read data/property.js. When the real
-      phone/email land, update them in index.html too, or delete the noscript
-      contact block. Grep index.html for "5555550100" and "example.com".
+      (top of <main>, #quote, footer): [(555) 555-0100] as tel:+15555550100 and
+      [owners@example.com], plus a prefilled mailto: body listing the quote
+      fields. These cannot read data/company.js. When the real phone/email
+      land, update them in index.html too. Grep index.html for "5555550100"
+      and "example.com".
 
    3. JS-INJECTED MARKUP IS STYLED IN TWO LAYERS. Every JS-built region is
-      styled first generically (by element and by ARIA state — `button`,
-      `input`, `select`, `[aria-selected="true"]`, `[aria-invalid="true"]`,
-      `[hidden]`, `dl/dt/dd`, `ul/li`, `address`, `small`, `hr`, `img`) and
-      then a second time against the concrete class names js/site.js currently
-      emits, each under a `the exact shape js/site.js builds` comment:
-        plans  — .plans__tab .plans__panel .plans__figure .plans__art
-                 .plans__caption/-text .plans__facts .plans__facts-head
-                 .plans__name .plans__badge .plans__note .plans__keyfigures
-                 .plans__keyfigure/-label/-value/-unit .plans__rent
-                 .plans__size .plans__specs .plans__specrow/-label/-value
-                 .plans__cta
-        tour   — .tour__field .tour__label .tour__hint .tour__input
-                 .tour__error .tour__submit
-                 .tour__confirmation-tel/-mail/-hours
-        details— .tour__detail--phone/--email/--address/--hours
-        footer — .site-footer__name/__address/__honesty/__honesty-title/
-                 __honesty-list/__honesty-item(--footage|--stills)/
-                 __equal-housing/__disclaimer
-      If site.js renames any of these, the page degrades to the generic layer
-      (still legible, less refined) rather than breaking. Renames are cheap to
-      re-point here; deletions are not, so prefer renaming over restructuring.
+      styled first generically — by element and ARIA state (`h3`, `p`, `ul/li`,
+      `dl/dt/dd`, `strong`, `input`, `select`, `textarea`, `button`, `legend`,
+      `address`, `[aria-invalid="true"]`, `[role="status"]`, `[hidden]`) — so
+      whatever site.js emits lands correctly. Then a second time against the
+      class names it is expected to emit, so the result is refined rather than
+      merely legible:
+        services — .services__title .services__body .services__items
+                   .services__item
+        why      — .why__stat .why__title .why__body
+        pricing  — .pricing__tier--featured (or .is-featured, or
+                   [data-featured="true"]) .pricing__tier-name / .pricing__name
+                   .pricing__rate .pricing__rate-note .pricing__summary
+                   .pricing__badge .pricing__includes
+        quote    — .quote__field .quote__label .quote__hint .quote__input
+                   .quote__error .quote__submit
+                   .quote__confirmation-tel/-mail/-hours
+                   .quote__detail--phone/--address/--hours .quote__phone
+        footer   — .site-footer__name/__address/__honesty/__honesty-title/
+                   __honesty-list/__honesty-item(--footage|--stills)/
+                   __equal-housing/__disclaimer
+      If site.js names them something else the page degrades to the generic
+      layer (still legible, less refined) rather than breaking. Renames are
+      cheap to re-point here; deletions are not, so prefer renaming.
 
-   3a. SPECIFICITY, IN ONE PLACE. The generic layer is written as
-      `.plans__panels dl` / `dt` / `dd` / `p` / `h3` and `.site-footer ul` —
-      one class plus one element, which outranks a bare class. So every
-      round-2 class rule for that markup is scoped one level up
-      (`.plans__panels .plans__keyfigures`, `.site-footer
-      .site-footer__honesty-list`) to win the cascade back. Round 1's
+   3a. THE `.tour__*` ALIASES IN §9 ARE INTENTIONAL. v2's site.js built the
+      form with `.tour__field / __label / __hint / __input / __error /
+      __submit` and `.tour__confirmation-tel/-mail/-hours`. If v3's site.js
+      carries that markup across under the new section, the form still lands
+      correctly, because every one of those rules is written as a pair scoped
+      inside `.quote__form`. They are dead weight the day site.js settles on
+      `quote__*` — delete the alias halves then, not before.
+
+   3b. SPECIFICITY, IN ONE PLACE. The generic layer is written as
+      `.services__grid p` / `.pricing__tiers p` / `.why__grid p` — one class
+      plus one element, which outranks a bare class. So every class rule for
+      that same markup is scoped one level up (`.pricing__tiers
+      .pricing__rate`, `.why__grid .why__stat`) to win the cascade back. v2's
       `.plans__badge` lost exactly this fight and rendered muted grey instead
       of brass. Add a rule to the generic layer and you may need to re-scope
       its specific counterpart.
 
-   3b. FIELD ORDER IN .tour__field. site.js emits label → hint → input →
-      error. layout.css uses explicit `grid-row` values to render the hint
-      BELOW the input, so a field with a hint still lines its control up with
-      the fields that have none. If site.js reorders these nodes, drop the
-      `grid-row` declarations in the `.tour__field` block.
+   3c. FIELD ORDER IN .quote__field. site.js is expected to emit
+      label -> hint -> input -> error. layout.css uses explicit `grid-row`
+      values to render the hint BELOW the input, so a field with a hint still
+      lines its control up with the fields that have none. If site.js orders
+      these nodes differently, drop the `grid-row` declarations in §9.
 
-   4. MOTION HANDOFF — CHANGED IN ROUND 2. This file still sets no transition,
-      transform or opacity on .chapter / .chapter__media / .chapter__copy and
-      never reads --p, .is-active or .is-seen. What changed is the geometry:
+   3d. THE MESSAGE FIELD SPANS BOTH COLUMNS via `.quote__form > *:has(textarea)`,
+      isolated in its own rule so a browser without :has() drops that rule and
+      nothing else. Every other field takes one column. If site.js wraps the
+      textarea more than one level deep inside the field, add an explicit
+      `grid-column: 1 / -1` to whatever it does emit.
 
-        - `.chapter__media` is now `position: absolute; inset: 0` on the
-          chapter, so it fills the whole 100svh scene edge to edge. That one
-          declaration is written as `.journey .chapter__media` — two classes —
-          because chapters.css restates `position: relative` on the same class
-          and loads later. If Motion needs the frame positioned differently,
+   4. `quote.intro` IS BOUND IN INDEX.HTML, NOT INJECTED. The #quote lede is
+      `<p class="section__lede" data-bind="quote.intro">`, so the data-bind
+      pass fills it. site.js should NOT also render quote.intro inside
+      [data-quote-form] or [data-quote-details], or the sentence appears twice.
+
+   5. MOTION HANDOFF — UNCHANGED FROM v2, AND DELIBERATELY SO. This file still
+      sets no transition, transform or opacity on .chapter / .chapter__media /
+      .chapter__copy and never reads --p, .is-active or .is-seen. The geometry
+      Motion depends on is untouched by the v3 repositioning:
+
+        - `.chapter__media` is `position: absolute; inset: 0` on the chapter,
+          so it fills the whole 100svh scene edge to edge. That declaration is
+          written as `.journey .chapter__media` — two classes — because
+          chapters.css restates `position: relative` on the same class and
+          loads later. If Motion needs the frame positioned differently,
           change it there AND here; do not just raise specificity, or the
           picture stops filling the chapter.
         - `.chapter` carries ZERO padding for the same reason: padding on the
           chapter would inset the picture. All chapter spacing lives on
-          `.chapter__copy`, and it is set with MARGIN, not padding, so that
+          `.chapter__copy`, and it is set with MARGIN, not padding, so
           chapters.css can own that element's padding for the copy panel's
           bleed without the two colliding.
         - The copy is bottom-anchored (`align-content: end`) inside the content
           rail and alternates side every second chapter at >= 62rem.
         - `.journey` still has overflow-x: clip.
 
-   5. THE SCRIM IS MOTION'S, DELIBERATELY. layout.css draws no veil over the
+   6. THE SCRIM IS MOTION'S, DELIBERATELY. layout.css draws no veil over the
       artwork. It did for one iteration, and stacked on top of the always-on
       scrim in chapters.css it turned every chapter near-black — the artwork
       was gone and contrast was 11:1 where 4.5:1 was needed. What this file
@@ -1642,14 +2004,7 @@ body.is-scrolled .sticky-cta {
       the band chapters.css weights its veil for. If the copy is ever moved to
       the top or centre of the frame, re-measure before shipping.
 
-      Contrast was verified by rendering the real page with the text set to
-      transparent and sampling the lightest pixel inside every text run's box,
-      at 390 / 768 / 1440, over both the video posters and the SVG art, and
-      again with the property name replaced by a 40-character one. 102 samples
-      per pass; worst across all of them 5.93:1, on the hero eyebrow with the
-      long name at 1440. Body copy never drops below 10.7:1.
-
-   6. THE POSTER STILL IS PAINTED TWICE, ON PURPOSE, AND ONE OF THEM IS
+   7. THE POSTER STILL IS PAINTED TWICE, ON PURPOSE, AND ONE OF THEM IS
       CURRENTLY THE ONLY ONE THAT WORKS.
 
       js/scroll.js reads each video's `poster` attribute and writes it to
@@ -1658,42 +2013,38 @@ body.is-scrolled .sticky-cta {
       that custom property is resolved against the stylesheet the `var()` is
       USED in — css/chapters.css — not against the document, so
       `assets/video/x-poster.jpg` is fetched as `css/assets/video/x-poster.jpg`
-      and 404s. Combined with chapters.css hiding a video that errored, two of
-      the four video chapters rendered as solid black rectangles at 1440.
+      and 404s.
 
       Fix for Motion, in js/scroll.js, one line:
           var abs = new URL(poster, document.baseURI).href;
           ... .setProperty('--chapter-poster', 'url("' + abs + '")');
-      Until then, `.chapter[data-art="…"]` in section 4 of this file paints the
-      same four posters as a background on the CHAPTER, underneath the media
-      frame, with `../assets/…` paths that resolve correctly from css/. It is
-      also a genuine improvement in its own right: it needs no JavaScript at
-      all, so the still is there before scroll.js runs and if it never runs.
-      Both point at the same URL, so it is one download either way, and the
-      rules are harmless once the JS is fixed. `.chapter__media` is
-      `background-color: transparent` so this can show through.
+      Until then, `.chapter[data-art="…"]` in §4 paints the same four posters
+      as a background on the CHAPTER, underneath the media frame, with
+      `../assets/…` paths that resolve correctly from css/. It needs no
+      JavaScript at all, so the still is there before scroll.js runs and if it
+      never runs. Both point at the same URL, so it is one download either way.
 
-   6b. TWO CLIPS FAIL TO LOAD OVER file://. exterior-aerial-1080.mp4 and
-      living-1080.mp4 — the two largest files — raise a request failure in
-      headless Chromium on a file:// origin, which is what puts those chapters
-      into `data-video-state="error"`. The 720 variants and the two smaller
-      1080s load. Worth re-testing over HTTP before assuming it is an encoding
-      problem; note 6 is what stops it being visible either way.
-
-   7. OG IMAGE. The Open Graph / Twitter image points at
+   8. OG IMAGE. The Open Graph / Twitter image points at
       assets/exterior-aerial.svg. Several scrapers (Twitter, Slack) will not
       render an SVG preview. Before launch, export a 1200x630 PNG to
       assets/og-cover.png and repoint the four og:image / twitter:image tags.
+      Whatever replaces it must not read as a photograph of a building this
+      company manages — the alt text on all four tags says plainly that it is
+      an illustration and not a property under management.
 
-   8. CANONICAL URL. index.html uses https://example.com/ as a placeholder in
+   9. CANONICAL URL. index.html uses https://example.com/ as a placeholder in
       <link rel="canonical">, og:url and the og/twitter image URLs. Replace at
       deploy time.
 
-   9. THE PER-CHAPTER HONESTY LABEL. All eight chapters carry
+   10. THE PER-CHAPTER HONESTY LABEL. All eight chapters carry
       `<p class="chapter__note" data-media-note data-bind="legal.footageLabel">`
       (video) or `legal.artLabel` (SVG), with the text also written inline so
       it is readable with JavaScript off. Three hooks on one element on purpose:
-      `data-bind` is Data's, `data-media-note` and `.chapter__note` are the two
-      selectors chapters.css styles the chip with, and this file positions it.
-      Rename none of them without checking the other two files.
+      `data-bind` is Content's, `data-media-note` and `.chapter__note` are the
+      two selectors chapters.css styles the chip with, and this file positions
+      it. Rename none of them without checking the other two files.
+
+   11. data/property.js IS DEAD. index.html now loads `data/company.js` and
+      site.js reads `window.COMPANY`. The old file is Content's to delete —
+      Structure does not touch data/. Until it goes, it is simply unreferenced.
    -------------------------------------------------------------------------- */

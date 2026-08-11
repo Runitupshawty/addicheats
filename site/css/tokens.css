@@ -213,6 +213,13 @@ legend {
      reason. Re-test with a 45-character name before raising the ceiling.    */
   --step-hero: clamp(2.125rem, 1.31rem + 3.35vw, 4.125rem);
 
+  /* The "why owners choose us" stat. Same reasoning as --step-hero, one step
+     smaller: every stat is a bracketed placeholder of unknown length, and it
+     sits in a column that can be as narrow as 15rem in a four-up grid. Capped
+     at 2.5rem so "[24 hrs]" reads as a number and "[Under two business days]"
+     still wraps to two lines instead of overflowing its card. */
+  --step-stat: clamp(1.75rem, 1.31rem + 1.8vw, 2.5rem);
+
   --lh-tight: 1.04;
   --lh-snug: 1.16;
   --lh-heading: 1.1;
@@ -281,6 +288,11 @@ legend {
   --width-page: 76rem;    /* 1216 — standard content frame                    */
   --width-text: 44rem;    /*  704 — prose column                              */
   --width-narrow: 32rem;  /*  512 — forms, single-column cards                */
+  /* The quote section's left rail at >= 62rem: heading, lede and the phone /
+     email / address block sit here while the form takes the rest of the page
+     column. Subtracted from --width-page in layout.css §9, so the two columns
+     plus their gutter always add back up to the standard content frame.      */
+  --width-aside: 24rem;   /*  384 — quote section's left rail                 */
 
   --header-height: clamp(3.5rem, 3.1rem + 1.7vw, 4.5rem);
   --chapter-min-height: 100svh;
