@@ -196,3 +196,75 @@ body `"Liberation Sans", "DejaVu Sans", system-ui, sans-serif`. No webfonts, no 
 - Accessible: real landmarks, one `<h1>`, focus states, labelled inputs, alt text
   on every `<img>`, colour contrast at least 4.5:1 for body text.
 - Honest: every placeholder visibly reads as a placeholder.
+
+---
+
+# Round 2 addendum — refinement
+
+Round 1 shipped a working site. This round fixes what the screenshots exposed.
+Same file ownership as above. Same rule: do not touch another owner's files.
+
+## Confirmed defects (from rendered screenshots)
+
+1. **Desktop hero clips its own headline.** At 1440×900 the `h1` renders as
+   `[PROPERTY` — the text is cut off by its card. Critical.
+2. **Chapters are not cinematic.** Media renders as a small floating card occupying
+   roughly a third of the viewport. The entire premise is a full-screen walk-through;
+   media must fill the chapter and copy must sit over it.
+3. **Artwork reads washed out** — pale, low-contrast, muddy. It should read premium.
+4. **Sticky CTA dominates on mobile** — a full-width black pill covering content.
+5. **Floor-plan panel** — plan art is clipped at the bottom; the detail column
+   floats oddly to the right.
+
+## Video contract (new)
+
+Four chapters now have real footage in `assets/video/`. The other four keep SVG art.
+
+| Chapter | `data-art` | Has video |
+|---|---|---|
+| `ch-arrival` | `exterior-aerial` | **yes** |
+| `ch-approach` | `exterior-street` | **yes** |
+| `ch-entrance` | `lobby` | no — SVG |
+| `ch-living` | `living` | **yes** |
+| `ch-kitchen` | `kitchen` | **yes** |
+| `ch-rest` | `bedroom` | no — SVG |
+| `ch-amenities` | `amenity-courtyard` | no — SVG |
+| `ch-neighborhood` | `neighborhood` | no — SVG |
+
+Files per video chapter: `assets/video/<art>-1080.mp4`, `<art>-720.mp4`,
+`<art>-poster.jpg`. All are H.264, silent, 5.04s, 24fps, faststart, GOP 12.
+
+**Markup** (Structure owns; Motion codes against it). Inside `.chapter__media`:
+
+```html
+<video class="chapter__video" data-chapter-video
+       data-src-720="assets/video/living-720.mp4"
+       data-src-1080="assets/video/living-1080.mp4"
+       poster="assets/video/living-poster.jpg"
+       muted playsinline preload="none"
+       disablepictureinpicture aria-hidden="true"></video>
+```
+
+- No `src` in the markup — **Motion sets it** from `data-src-*` based on viewport
+  width, and only for chapters near the viewport. This prevents four videos
+  downloading on page load.
+- Chapters without video keep their existing `<img>` exactly as-is.
+- Video chapters must ALSO keep a `<noscript>`-safe still: the `poster` covers the
+  JS-off case, so no `<img>` is needed inside a video chapter, but the poster
+  attribute is mandatory.
+
+**Scrub behaviour** (Motion owns):
+- Drive `video.currentTime` from the chapter's `--p` so scrolling scrubs the clip.
+- Never call `play()`. This is scrubbed, not played. No autoplay, no loop.
+- Seek only when the delta is meaningful (~1 frame, 1/24s) to avoid seek thrash.
+- Set `src` lazily when the chapter is within ~1.5 viewports; drop it when far away.
+- Under `prefers-reduced-motion: reduce`, do not load video at all — show the poster.
+- If the browser cannot decode the file, the poster must remain visible — never a
+  black box.
+
+## Honesty requirement (unchanged, now load-bearing)
+
+The current footage is AI-generated and is **not** this property. Every video chapter
+must carry a small, legible "Illustrative footage — not the actual property" note,
+styled quietly but genuinely readable (not 8px grey-on-grey). Same for SVG chapters,
+which already carry their `PLACEHOLDER` tag.
