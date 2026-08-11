@@ -1472,6 +1472,16 @@ body.is-scrolled .sticky-cta {
   transition-delay: 0s;
 }
 
+/* Once the quote section is on screen the visitor has arrived: a floating
+   shortcut to it is now pure obstruction, and on a phone it sits directly on
+   top of the form's own fields. Retract it. `.at-quote` is set by scroll.js. */
+body.at-quote .sticky-cta {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.75rem);
+}
+
 .sticky-cta:hover {
   background-color: var(--c-accent-hover);
   border-color: var(--c-accent);

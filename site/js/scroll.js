@@ -217,6 +217,7 @@
   var lastProgress = -1;
   var lastActiveEl = null;
   var lastScrolledState = null;
+  var lastAtQuoteState = null;
 
   /** Debounce timer for resize. */
   var resizeTimer = 0;
@@ -380,6 +381,22 @@
       if (scrolled !== lastScrolledState) {
         body.classList.toggle('is-scrolled', scrolled);
         lastScrolledState = scrolled;
+      }
+
+      /* ---- body.at-quote ----
+       * True once any part of #quote is on screen. The sticky CTA is a
+       * shortcut TO that section, so it becomes obstruction the moment you
+       * reach it — on a phone it lands squarely on the form's own inputs.
+       * Read from the same cached rect pass as everything else; no extra
+       * layout work, and it stays correct without an observer. */
+      var quoteEl = document.getElementById('quote');
+      if (quoteEl) {
+        var qr = quoteEl.getBoundingClientRect();
+        var atQuote = qr.top < vh && qr.bottom > 0;
+        if (atQuote !== lastAtQuoteState) {
+          body.classList.toggle('at-quote', atQuote);
+          lastAtQuoteState = atQuote;
+        }
       }
     }
 
@@ -1182,6 +1199,20 @@
     if (scrolled !== lastScrolledState) {
       body.classList.toggle('is-scrolled', scrolled);
       lastScrolledState = scrolled;
+    }
+
+    // `.at-quote` is functionality too, for the same reason `.is-scrolled` is:
+    // it retracts the sticky CTA once it would otherwise sit on top of the
+    // quote form's own fields. A reduced-motion visitor must not be left
+    // fighting a button covering an input.
+    var quoteEl = document.getElementById('quote');
+    if (quoteEl) {
+      var qr = quoteEl.getBoundingClientRect();
+      var atQuote = qr.top < vh && qr.bottom > 0;
+      if (atQuote !== lastAtQuoteState) {
+        body.classList.toggle('at-quote', atQuote);
+        lastAtQuoteState = atQuote;
+      }
     }
   }
 
