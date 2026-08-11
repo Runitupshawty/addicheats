@@ -118,7 +118,7 @@
   --scrim-ink: 22, 18, 14;          /* --c-ink #16120E as an rgb triplet */
   --scrim-media-top: 0.3;           /* thinnest point of the veil, at the top */
   --scrim-media-foot: 0.78;         /* thickest point, at the foot            */
-  --scrim-copy-alpha: 0.52;         /* the panel directly behind the copy     */
+  --scrim-copy-alpha: 0.56;         /* the panel directly behind the copy     */
 
   /* The panel bleeds this far past the copy block on each axis, and fades out
      across the last part of that bleed. Feather < bleed, always, so the text
@@ -356,8 +356,8 @@
   background: linear-gradient(
     to bottom,
     rgba(var(--scrim-ink), 0) 0,
-    rgba(var(--scrim-ink), var(--scrim-copy-alpha, 0.52)) var(--scrim-feather-y, 2.25rem),
-    rgba(var(--scrim-ink), var(--scrim-copy-alpha, 0.52)) calc(100% - var(--scrim-feather-y, 2.25rem)),
+    rgba(var(--scrim-ink), var(--scrim-copy-alpha, 0.56)) var(--scrim-feather-y, 2.25rem),
+    rgba(var(--scrim-ink), var(--scrim-copy-alpha, 0.56)) calc(100% - var(--scrim-feather-y, 2.25rem)),
     rgba(var(--scrim-ink), 0) 100%
   );
 
@@ -388,7 +388,7 @@
    solid ink and which measures 5.4:1 here against an impossible pure-white
    frame. The text-shadow is belt-and-braces for an unusually bright patch. */
 .chapter:not([data-copy-scrim="off"]) .chapter__eyebrow {
-  color: #e9c68f;
+  color: #f0d6a4;
   text-shadow: 0 1px 2px rgba(var(--scrim-ink), 0.6);
 }
 
@@ -426,9 +426,8 @@
   color: #ded5c8;
   font-family: var(--font-body, sans-serif);
   font-size: var(--step--1, 0.8125rem);
-  line-height: 1.35;
-  letter-spacing: var(--ls-caps, 0.09em);
-  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
   text-wrap: balance;
 }
 
@@ -504,9 +503,10 @@
     --copy-rise: 24px;
     --copy-release: 15px;
 
-    --scrim-pad-y: 2.75rem;
-    --scrim-pad-x: 1.75rem;
-    --scrim-feather-y: 2.5rem;
+    --scrim-bleed-y: 3rem;
+    --scrim-bleed-x: 2.25rem;
+    --scrim-feather-y: 2.75rem;
+    --scrim-feather-x: 2rem;
   }
 
   /* The stagger opens up to match. Kept in document order: eyebrow 2, title 6,
@@ -607,10 +607,13 @@
           completely — veil, panel and light text all go together, so they
           cannot come apart.
 
-      `.chapter__copy` also picks up padding here (2.25rem / 1.25rem, more at
-      48em) because the scrim panel is one of its backgrounds and the text has
-      to sit inside it. If layout.css wants a different inset, set it on a
-      wrapper or on `.chapter`, not on `.chapter__copy`.
+      The scrim panel is a `::before` on `.chapter__copy` that bleeds outward
+      on all four sides, so it changes no box model and needs no padding from
+      you. It does need two things: `.chapter__copy::before` left alone, and
+      `.chapter__copy` to stay a positioned element. This file supplies
+      `position: relative` at zero specificity via `:where()`, so any
+      `position` layout.css sets — including `absolute` for a full-bleed
+      placement — wins automatically and everything still works.
 
    C. WHAT THIS FILE DOES NOT SET ON `.chapter__media`. No `position`, no
       `inset`, no `z-index`, no `aspect-ratio` — a full-bleed rebuild is free

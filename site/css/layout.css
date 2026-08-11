@@ -490,6 +490,10 @@ body.is-scrolled .site-header {
   z-index: 3;
   inset-block-start: calc(var(--header-height) + var(--space-2xs));
   inset-inline-end: var(--space-gutter);
+  /* Absolute positioning turns chapters.css's `inline-size: inline-block` into
+     a block, which would stretch the chip to its max width and leave the text
+     ranged right inside a wide empty slab. Shrink-to-fit restores the chip. */
+  inline-size: fit-content;
   max-inline-size: min(26rem, calc(100% - var(--space-gutter) * 2));
   padding: 0.4rem 0.7rem;
   background-color: rgb(var(--c-ink-rgb) / 0.78);
@@ -613,7 +617,7 @@ body.is-scrolled .site-header {
 .plans__tabs {
   display: flex;
   gap: var(--space-2xs);
-  margin-block-end: var(--space-xl);
+  margin-block-end: var(--space-lg);
   padding-block-end: 0;
   border-block-end: var(--hairline) solid var(--c-rule);
   /* Mobile: a single scrollable row rather than a wrapped, ragged block. */
@@ -744,47 +748,162 @@ body.is-scrolled .site-header {
 }
 
 /* --- the exact shape js/site.js builds ------------------------------------
-   Kept as a separate block so the generic rules above still carry any future
-   change of markup. */
+   Round 2: site.js restructured a panel into a drawing with a caption on one
+   side and a comparison card on the other. */
 
-.plans__facts {
+.plans__panels .plans__figure {
+  display: grid;
+  gap: var(--space-2xs);
+  justify-items: start;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.plans__panels .plans__caption {
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  line-height: 1.45;
+}
+
+.plans__panels .plans__caption-text {
+  font-size: inherit;
+}
+
+.plans__panels .plans__facts {
   display: grid;
   gap: var(--space-md);
   align-content: start;
   justify-items: start;
+  min-inline-size: 0;
   padding-block-start: var(--space-md);
   border-block-start: 2px solid var(--c-accent);
 }
 
-.plans__spec {
-  color: var(--c-muted);
-  font-size: var(--step--1);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-  max-inline-size: none;
+/* Name and availability on one baseline, name first and allowed to wrap; the
+   badge holds its own line height so the two never look kerned apart. */
+.plans__panels .plans__facts-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2xs) var(--space-md);
+  inline-size: 100%;
 }
 
-.plans__rent {
-  color: var(--c-ink);
-  font-family: var(--font-display);
-  font-size: var(--step-3);
+.plans__panels .plans__name {
+  font-size: var(--step-2);
   line-height: var(--lh-snug);
-  letter-spacing: var(--ls-heading);
-  max-inline-size: none;
+  margin: 0;
 }
 
-.plans__badge {
+/* The `.plans__panels p` rule above is also one class, and it comes first, so
+   the badge used to lose the cascade and render muted grey. Scoped by parent
+   to win it back — brass on a brass tint, at the deeper step so a --step--2
+   label still clears 4.5:1. */
+.plans__panels .plans__facts-head .plans__badge {
+  align-self: baseline;
   padding: 0.3rem 0.8rem;
   background-color: var(--c-accent-a12);
   border: var(--hairline) solid var(--c-accent-a30);
   border-radius: var(--radius-pill);
-  /* Brass on a brass tint needs the deeper step to clear 4.5:1 at this size. */
   color: var(--c-accent-deeper);
   font-size: var(--step--2);
   font-weight: var(--fw-medium);
   letter-spacing: var(--ls-caps);
   text-transform: uppercase;
+  line-height: 1.4;
+  white-space: nowrap;
   max-inline-size: none;
+}
+
+.plans__panels .plans__note {
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+  max-inline-size: 40ch;
+}
+
+/* Rent and size are what anyone actually compares, so they are the biggest
+   thing in the panel and they sit side by side as soon as there is room. */
+.plans__panels .plans__keyfigures {
+  display: grid;
+  gap: var(--space-md);
+  inline-size: 100%;
+  margin-block-start: 0;
+  padding-block: var(--space-sm);
+  border-block: var(--hairline) solid var(--c-rule);
+}
+
+.plans__panels .plans__keyfigure {
+  display: grid;
+  gap: var(--space-3xs);
+  min-inline-size: 0;
+}
+
+.plans__panels .plans__keyfigure-label {
+  color: var(--c-muted);
+  font-size: var(--step--2);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+}
+
+.plans__panels .plans__keyfigure-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35em;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  line-height: var(--lh-snug);
+}
+
+.plans__panels .plans__rent,
+.plans__panels .plans__size {
+  font-size: var(--step-2);
+  letter-spacing: var(--ls-heading);
+}
+
+.plans__panels .plans__keyfigure-unit {
+  color: var(--c-muted);
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-body);
+}
+
+.plans__panels .plans__specs {
+  display: grid;
+  gap: var(--space-2xs);
+  inline-size: 100%;
+  margin-block-start: 0;
+}
+
+.plans__panels .plans__specrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-block: var(--space-3xs);
+}
+
+.plans__panels .plans__specrow-label {
+  color: var(--c-muted);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+}
+
+.plans__panels .plans__specrow-value {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--c-ink);
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  line-height: 1.5;
 }
 
 .plans__cta {
@@ -924,6 +1043,20 @@ body.is-scrolled .site-header {
   justify-self: start;
   grid-column: 1 / -1;
   margin-block-start: var(--space-2xs);
+}
+
+/* The "not yet connected" confirmation carries the phone, email and hours —
+   with no backend wired, those links ARE the fallback, so they are set at
+   reading size and given the accent, not left as body-coloured runs of text. */
+.tour__confirmation-tel,
+.tour__confirmation-mail {
+  color: var(--c-accent-deep);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+.tour__confirmation-hours {
+  color: var(--c-muted);
 }
 
 /* Success / "not yet connected" confirmation from site.js. */
@@ -1148,6 +1281,56 @@ body.is-scrolled .sticky-cta {
   font-size: var(--step-0);
 }
 
+/* --- the honesty disclosure -------------------------------------------------
+   These are the lines that say the footage is AI-generated and the drawings
+   are placeholders. They are the most important text in the footer and they
+   are deliberately NOT set at fine-print size: --step--1 with a real measure,
+   on the full-strength on-dark colour, so they read as a statement rather than
+   as something being got out of the way. Round 1 had them at --step--2 running
+   the whole 1440px, which is both harder to read and easier to dismiss.
+   -------------------------------------------------------------------------- */
+
+.site-footer__honesty {
+  margin-block-start: var(--space-xl);
+  padding-block-start: var(--space-lg);
+  border-block-start: var(--hairline) solid var(--c-rule-invert);
+}
+
+.site-footer__honesty-title {
+  color: var(--text-on-dark);
+  font-size: var(--step--1);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+}
+
+/* Scoped past the generic `.site-footer ul`, which is one class + one element
+   and would otherwise win the gap back. */
+.site-footer .site-footer__honesty-list {
+  display: grid;
+  gap: var(--space-sm);
+  margin-block-start: var(--space-md);
+  list-style: none;
+  padding: 0;
+}
+
+.site-footer__honesty-item {
+  max-inline-size: 68ch;
+  color: var(--text-on-dark);
+  font-size: var(--step--1);
+  line-height: var(--lh-loose);
+}
+
+.site-footer__honesty-item--footage {
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--c-accent);
+}
+
+.site-footer__honesty-item--stills {
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--c-rule-invert);
+}
+
 .site-footer__equal-housing {
   margin-block-start: var(--space-xl);
   padding-block-start: var(--space-lg);
@@ -1155,14 +1338,12 @@ body.is-scrolled .sticky-cta {
 }
 
 .site-footer__equal-housing,
-.site-footer__imagery,
 .site-footer__disclaimer {
   color: var(--text-on-dark-secondary);
   font-size: var(--step--2);
   max-inline-size: 68ch;
 }
 
-.site-footer__imagery,
 .site-footer__disclaimer {
   margin-block-start: var(--space-2xs);
 }
@@ -1274,6 +1455,18 @@ body.is-scrolled .sticky-cta {
 
 /* Large phone / small tablet. */
 @media (min-width: 34rem) {
+  /* Rent beside size: the two numbers anyone is actually comparing, on one
+     line, so a plan can be read at a glance without scrolling. */
+  .plans__panels .plans__keyfigures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .plans__panels .plans__rent,
+  .plans__panels .plans__size {
+    font-size: var(--step-3);
+  }
+
   .tour__form {
     padding: var(--space-xl);
   }
@@ -1289,12 +1482,15 @@ body.is-scrolled .sticky-cta {
     /* Drawing left, facts right, both hung from the same top line. Round 1
        centred the facts column against a very tall drawing, which is what made
        it look like it was floating on its own. */
-    grid-template-columns: minmax(0, 1.15fr) minmax(15rem, 0.85fr);
+    /* The drawing's column is sized to the drawing's own cap rather than to a
+       fraction, so there is no dead space between the plan and the card when
+       the square is height-limited on a short screen. */
+    grid-template-columns: minmax(0, 34rem) minmax(15rem, 1fr);
     gap: var(--space-xl);
     align-items: start;
   }
 
-  .plans__facts {
+  .plans__panels .plans__facts {
     padding: var(--space-lg);
     background-color: var(--c-paper);
     border: var(--hairline) solid var(--c-rule);
@@ -1334,7 +1530,7 @@ body.is-scrolled .sticky-cta {
 
   .plans__intro,
   .tour__intro {
-    padding-block-end: var(--space-xl);
+    padding-block-end: var(--space-lg);
   }
 
   .section__title {
